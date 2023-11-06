@@ -1,17 +1,24 @@
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
+import javax.swing.table.TableColumn;
 import java.awt.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.function.Consumer;
 
 public class AquariumManagementUI extends JFrame {
-    private static final String JSON_STORE = "./data/aquarium.json";
     private static final int WIDTH = 800;
     private static final int HEIGHT = 600;
 
     private CardLayout cardLayout;
     private JPanel cardsPanel;
+    private Map<String, JPanel> categoryPanels; // HashMap to store category panels
 
     public AquariumManagementUI() {
         super("Aquarium Manager");
+        categoryPanels = new HashMap<>();
         initializeComponents();
     }
 
@@ -26,17 +33,21 @@ public class AquariumManagementUI extends JFrame {
         JPanel homePanel = createHomePanel();
         cardsPanel.add(homePanel, "HomePanel");
 
-        // Create and add each category panel to the card layout
+        // Create and add each category panel to the card layout and the HashMap
         String[] categories = {"Animal", "Plant", "Exhibit", "Staff", "Custodian", "Aquarist", "Veterinarian"};
         for (String category : categories) {
             JPanel categoryPanel = createCategoryPanel(category);
             cardsPanel.add(categoryPanel, category + "Panel");
+            categoryPanels.put(category, categoryPanel); // Store the panel in the HashMap
+
             JButton button = new JButton("Manage " + category);
             button.addActionListener(e -> cardLayout.show(cardsPanel, category + "Panel"));
             homePanel.add(button);
         }
 
         add(cardsPanel, BorderLayout.CENTER);
+
+
 
         pack();
         setLocationRelativeTo(null);
@@ -68,13 +79,23 @@ public class AquariumManagementUI extends JFrame {
         categoryPanel.add(new JScrollPane(table), BorderLayout.CENTER);
 
         // Input fields
-        JPanel inputPanel = new JPanel(new GridLayout(1, 3, 5, 5));
-        JTextField inputField1 = new JTextField();
-        JTextField inputField2 = new JTextField();
-        JTextField inputField3 = new JTextField();
-        inputPanel.add(inputField1);
-        inputPanel.add(inputField2);
-        inputPanel.add(inputField3);
+        JPanel inputPanel = new JPanel();
+        inputPanel.setLayout(new BoxLayout(inputPanel, BoxLayout.X_AXIS));
+        List<JTextField> inputFields = new ArrayList<>();
+
+        // Function to add a new text field to the input panel
+        Consumer<String> addInputField = (text) -> {
+            JTextField field = new JTextField(text);
+            inputFields.add(field);
+            inputPanel.add(field);
+            inputPanel.add(Box.createRigidArea(new Dimension(5, 0))); // Spacer
+        };
+
+        // Add existing columns as input fields
+        for (String colName : columnNames) {
+            addInputField.accept("");
+        }
+
         categoryPanel.add(inputPanel, BorderLayout.NORTH);
 
         // Button Panel
@@ -82,11 +103,62 @@ public class AquariumManagementUI extends JFrame {
         JButton addButton = new JButton("Add " + category);
         JButton removeButton = new JButton("Remove " + category);
         JButton backButton = new JButton("Back to Home");
+        JButton addAttributeButton = new JButton("Add Attribute");
+        JButton removeAttributeButton = new JButton("Remove Attribute");
+        // Add an action listener to the add attribute button
+        addAttributeButton.addActionListener(e -> {
+            String attributeName = JOptionPane.showInputDialog(categoryPanel, "Enter the name of the new attribute:");
+            if (attributeName != null && !attributeName.trim().isEmpty()) {
+                tableModel.addColumn(attributeName);
+                addInputField.accept(""); // Add a new input field for the new attribute
+                inputPanel.revalidate();  // Refresh the input panel
+                inputPanel.repaint();
+            }
+        });
+
+        // Add an action listener to the add button for adding new data rows
+        addButton.addActionListener(e -> {
+            // Check if input fields are filled out
+            if (inputFields.stream().allMatch(field -> !field.getText().trim().isEmpty())) {
+                Object[] row = inputFields.stream().map(JTextField::getText).toArray();
+                tableModel.addRow(row);
+                inputFields.forEach(field -> field.setText("")); // Clear input fields
+            } else {
+                JOptionPane.showMessageDialog(categoryPanel, "Please fill in all fields.", "Input Error", JOptionPane.ERROR_MESSAGE);
+            }
+        });
+
+        removeAttributeButton.addActionListener(e -> {
+            String attributeName = JOptionPane.showInputDialog(categoryPanel, "Enter the name of the attribute to remove:");
+            if (attributeName != null && !attributeName.trim().isEmpty()) {
+                // Find the column index by the attribute (column) name
+                int colIndex = tableModel.findColumn(attributeName);
+                if (colIndex != -1) {
+                    TableColumn toRemove = table.getColumnModel().getColumn(colIndex);
+                    table.removeColumn(toRemove); // Remove the column from the view
+                    tableModel.setColumnCount(tableModel.getColumnCount() - 1); // Update the column count
+
+                    // Remove the corresponding input field
+                    JTextField fieldToRemove = inputFields.get(colIndex);
+                    inputPanel.remove(fieldToRemove);
+                    inputFields.remove(fieldToRemove);
+
+                    // Refresh the input panel
+                    inputPanel.revalidate();
+                    inputPanel.repaint();
+                } else {
+                    JOptionPane.showMessageDialog(categoryPanel, "Attribute not found.", "Error", JOptionPane.ERROR_MESSAGE);
+                }
+            }
+        });
+
         backButton.addActionListener(e -> cardLayout.show(cardsPanel, "HomePanel"));
 
         buttonPanel.add(addButton);
         buttonPanel.add(removeButton);
         buttonPanel.add(backButton);
+        buttonPanel.add(addAttributeButton);
+        buttonPanel.add(removeAttributeButton);
         categoryPanel.add(buttonPanel, BorderLayout.SOUTH);
 
         return categoryPanel;
