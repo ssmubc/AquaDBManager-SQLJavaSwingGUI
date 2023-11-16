@@ -9,7 +9,6 @@ public class AquariumManagementDB {
     private static final String ORACLE_URL = "jdbc:oracle:thin:@localhost:1522:stu";
     private Connection connection = null;
     public AquariumManagementDB() {
-        // Load the Oracle JDBC driver
         try {
             // Load the Oracle JDBC driver
             // Note that the path could change for new drivers
@@ -25,11 +24,15 @@ public class AquariumManagementDB {
             if (connection != null) {
                 connection.close();
             }
+            // for debugging
+            System.out.println("Ok we make it till here");
+            System.out.println(username);
             connection = DriverManager.getConnection(ORACLE_URL, username, password);
             // closing connection (for now) just testing if it works
             connection.close();
             return true;
         } catch (SQLException e) {
+            System.out.println(e.getMessage());
             System.out.println("The connection is not working");
             return false;
         }
