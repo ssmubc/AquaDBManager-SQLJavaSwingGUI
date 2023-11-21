@@ -1,3 +1,5 @@
+package AquariumManagement.src;
+
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableColumn;
@@ -7,6 +9,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Consumer;
+
 
 public class AquariumManagementUI extends JFrame {
     private static final int WIDTH = 800;
@@ -32,6 +35,11 @@ public class AquariumManagementUI extends JFrame {
 
         JPanel homePanel = createHomePanel();
         cardsPanel.add(homePanel, "HomePanel");
+
+        // adds the button for connecting to DB
+        JButton connectButton = new JButton("Connect to Aquarium Database");
+        connectButton.addActionListener(e -> connectDBPanel());
+        homePanel.add(connectButton);
 
         // Create and add each category panel to the card layout and the HashMap
         String[] categories = {"Animal", "Plant", "Exhibit", "Staff", "Custodian", "Aquarist", "Veterinarian"};
@@ -163,4 +171,48 @@ public class AquariumManagementUI extends JFrame {
 
         return categoryPanel;
     }
+
+    private void connectDBPanel() {
+        JFrame DBframe = new JFrame("Oracle DB Connection");
+        DBframe.setSize(400, 200);
+
+        // Create a panel to hold the components
+        JPanel DBpanel = new JPanel();
+        DBpanel.setLayout(new GridLayout(0, 2));
+        DBframe.add(DBpanel);
+
+        // Create labels, text fields for username and password
+        JLabel usernameLabel = new JLabel("Username:");
+        JTextField usernameTextField = new JTextField(20);
+
+        JLabel passwordLabel = new JLabel("Password:");
+        JPasswordField passwordField = new JPasswordField(20);
+        // Connect Oracle button
+        JButton connectButton = new JButton("Connect to Oracle DB");
+        connectButton.addActionListener(e -> connectDB(DBframe, usernameTextField, passwordField));
+
+        DBpanel.add(usernameLabel);
+        DBpanel.add(usernameTextField);
+        DBpanel.add(passwordLabel);
+        DBpanel.add(passwordField);
+        DBpanel.add(connectButton);
+
+        DBframe.setVisible(true);
+    };
+
+    private void connectDB(JFrame DBframe, JTextField usernameTextField, JPasswordField passwordField) {
+        // converts fields to strings
+        String username = usernameTextField.getText();
+        char[] passw = passwordField.getPassword();
+        String password = new String(passw);
+        // calls method from AquariumManagementDB()
+        AquariumManagementDB db = new AquariumManagementDB();
+        boolean status = db.getConnection(username, password);
+
+        if (status) {
+            JOptionPane.showMessageDialog(DBframe, "Connected to Oracle DB successfully!");
+        } else {
+            JOptionPane.showMessageDialog(DBframe, "Failed to connect to Oracle DB.");
+        }
+    };
 }
