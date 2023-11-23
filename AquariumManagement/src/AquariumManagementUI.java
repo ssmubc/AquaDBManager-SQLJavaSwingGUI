@@ -18,6 +18,8 @@ public class AquariumManagementUI extends JFrame {
     private CardLayout cardLayout;
     private JPanel cardsPanel;
     private Map<String, JPanel> categoryPanels; // HashMap to store category panels
+    // declaring the database
+    private AquariumManagementDB db;
 
     private Map<String, String[]> categoryColumns;
     public AquariumManagementUI() {
@@ -69,7 +71,15 @@ public class AquariumManagementUI extends JFrame {
         }
 
         add(cardsPanel, BorderLayout.CENTER);
+        // adds the button for closing DB
+        JButton inventoryButton = new JButton("Manage Inventory");
+        inventoryButton.addActionListener(e -> inventoryPanel());
+        homePanel.add(inventoryButton);
 
+        // adds the button for closing DB
+        JButton closeButton = new JButton("Close connection");
+        closeButton.addActionListener(e -> closeDBPanel());
+        homePanel.add(closeButton);
 
 
         pack();
@@ -229,13 +239,88 @@ public class AquariumManagementUI extends JFrame {
         char[] passw = passwordField.getPassword();
         String password = new String(passw);
         // calls method from AquariumManagementDB()
-        AquariumManagementDB db = new AquariumManagementDB();
+        db = new AquariumManagementDB();
         boolean status = db.getConnection(username, password);
-
         if (status) {
             JOptionPane.showMessageDialog(DBframe, "Connected to Oracle DB successfully!");
         } else {
             JOptionPane.showMessageDialog(DBframe, "Failed to connect to Oracle DB.");
         }
     };
+
+    private void inventoryPanel() {
+        JFrame DBframe = new JFrame("Inventory");
+        DBframe.setSize(400, 200);
+
+        // Create a panel to hold the components
+        JPanel DBpanel = new JPanel();
+        DBpanel.setLayout(new GridLayout(0, 2));
+        DBframe.add(DBpanel);
+
+        // Create labels, text fields for username and password
+        JLabel idLabel = new JLabel("Id:");
+        JTextField idTextField = new JTextField(20);
+
+        JLabel locationLabel = new JLabel("Location:");
+        JTextField locationField = new JPasswordField(20);
+        // Connect Oracle button
+        JButton addButton = new JButton("Add to Oracle DB");
+        addButton.addActionListener(e -> addInventoryPanel(DBframe, idTextField, locationField));
+
+        DBpanel.add(idLabel);
+        DBpanel.add(idTextField);
+        DBpanel.add(locationLabel);
+        DBpanel.add(locationField);
+        DBpanel.add(addButton);
+
+        DBframe.setVisible(true);
+    }
+
+    private void addInventoryPanel(JFrame DBFrame, JTextField idTextField, JTextField locationField) {
+        // calls method from AquariumManagementDB()
+        // converts fields to strings
+        Integer id = Integer.parseInt(idTextField.getText());
+        String location = locationField.getText();
+
+        boolean status = db.insertInventory(id, location);
+        if (status) {
+            JOptionPane.showMessageDialog(DBFrame, "Entry has been added successfully");
+        } else {
+            JOptionPane.showMessageDialog(DBFrame, "Error adding entry to database");
+        }
+    }
+
+    private void closeDBPanel() {
+        JFrame DBframe = new JFrame("Oracle DB Connection");
+        DBframe.setSize(400, 200);
+
+        // Create a panel to hold the components
+        JPanel DBpanel = new JPanel();
+        DBpanel.setLayout(new FlowLayout());
+        DBframe.add(DBpanel);
+
+        // adds the yes and no buttons and their event listeners
+        JButton yesButton = new JButton("Yes");
+        yesButton.addActionListener(e -> closeDB(DBframe));
+        JButton noButton = new JButton("No");
+        noButton.addActionListener(e -> cardLayout.show(cardsPanel, "HomePanel"));
+
+        DBpanel.add(yesButton);
+        DBpanel.add(noButton);
+
+        DBframe.setVisible(true);
+
+    }
+
+    private void closeDB(JFrame DBframe) {
+        // calls method from AquariumManagementDB()
+        boolean status = db.closeConnection();
+        if (status) {
+            JOptionPane.showMessageDialog(DBframe, "Connection has been closed successfully");
+        } else {
+            JOptionPane.showMessageDialog(DBframe, "Failed to close connection to Oracle DB.");
+        }
+    };
+
+
 }
