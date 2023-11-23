@@ -19,10 +19,26 @@ public class AquariumManagementUI extends JFrame {
     private JPanel cardsPanel;
     private Map<String, JPanel> categoryPanels; // HashMap to store category panels
 
+    private Map<String, String[]> categoryColumns;
     public AquariumManagementUI() {
         super("Aquarium Manager");
         categoryPanels = new HashMap<>();
+        initializeCategoryColumns();
         initializeComponents();
+    }
+
+    /*
+    TODO: change this to parse data read from DB instead of hard coding if time allows
+     */
+    private void initializeCategoryColumns() {
+        categoryColumns = new HashMap<>();
+        categoryColumns.put("Animal", new String[]{"ID", "Name", "Species", "Name", "LivingTemp"});
+        categoryColumns.put("Staff", new String[]{"ID", "Name", "Salary", "DateHired"});
+        categoryColumns.put("WaterTank", new String[]{"ID", "Name", "Volume", "Temperature", "LightingLevel"});
+
+        // Add other categories and their columns in a similar way
+        // categoryColumns.put("Plant", new String[]{"Column1", "Column2", ...});
+        // ...
     }
 
     private void initializeComponents() {
@@ -42,9 +58,8 @@ public class AquariumManagementUI extends JFrame {
         homePanel.add(connectButton);
 
         // Create and add each category panel to the card layout and the HashMap
-        String[] categories = {"Animal", "Plant", "Exhibit", "Staff", "Custodian", "Aquarist", "Veterinarian"};
-        for (String category : categories) {
-            JPanel categoryPanel = createCategoryPanel(category);
+        for (String category : categoryColumns.keySet()) {
+            JPanel categoryPanel = createCategoryPanel(category, categoryColumns.get(category));
             cardsPanel.add(categoryPanel, category + "Panel");
             categoryPanels.put(category, categoryPanel); // Store the panel in the HashMap
 
@@ -70,19 +85,13 @@ public class AquariumManagementUI extends JFrame {
         return homePanel;
     }
 
-    private JPanel createCategoryPanel(String category) {
+    private JPanel createCategoryPanel(String category, String[] columnNames) {
         JPanel categoryPanel = new JPanel(new BorderLayout());
         JTable table = new JTable();
 
         // Sample data for demonstration purposes
-        Object[][] sampleData = {
-                {"Sample 1", "Data 1", "Description 1"},
-                {"Sample 2", "Data 2", "Description 2"},
-                {"Sample 3", "Data 3", "Description 3"}
-        };
-        String[] columnNames = {"Name", "Details", "Description"};
 
-        DefaultTableModel tableModel = new DefaultTableModel(sampleData, columnNames);
+        DefaultTableModel tableModel = new DefaultTableModel(null, columnNames);
         table.setModel(tableModel);
         categoryPanel.add(new JScrollPane(table), BorderLayout.CENTER);
 
@@ -113,6 +122,7 @@ public class AquariumManagementUI extends JFrame {
         JButton backButton = new JButton("Back to Home");
         JButton addAttributeButton = new JButton("Add Attribute");
         JButton removeAttributeButton = new JButton("Remove Attribute");
+
         // Add an action listener to the add attribute button
         addAttributeButton.addActionListener(e -> {
             String attributeName = JOptionPane.showInputDialog(categoryPanel, "Enter the name of the new attribute:");
