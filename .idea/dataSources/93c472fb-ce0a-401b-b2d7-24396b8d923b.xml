@@ -272,11 +272,11 @@
     <schema id="90" parent="1" name="ORA_AQADIR01">
       <CreatedTimestamp>2023-11-20.08:46:30</CreatedTimestamp>
       <Current>1</Current>
-      <IntrospectionL1Timestamp>2023-11-23.03:27:45</IntrospectionL1Timestamp>
-      <IntrospectionL2Timestamp>2023-11-23.03:27:45</IntrospectionL2Timestamp>
-      <IntrospectionL3Timestamp>2023-11-23.03:27:45</IntrospectionL3Timestamp>
+      <IntrospectionL1Timestamp>2023-11-23.03:30:04</IntrospectionL1Timestamp>
+      <IntrospectionL2Timestamp>2023-11-23.03:30:04</IntrospectionL2Timestamp>
+      <IntrospectionL3Timestamp>2023-11-23.03:30:04</IntrospectionL3Timestamp>
       <IntrospectionVersion>200820</IntrospectionVersion>
-      <LocalIntrospectionTimestamp>2023-11-23.19:27:52</LocalIntrospectionTimestamp>
+      <LocalIntrospectionTimestamp>2023-11-23.19:30:19</LocalIntrospectionTimestamp>
       <ModifiedTimestamp>2023-11-20.10:25:56</ModifiedTimestamp>
       <ObjectId>5084</ObjectId>
     </schema>
