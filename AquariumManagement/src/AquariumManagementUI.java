@@ -137,6 +137,16 @@ public class AquariumManagementUI extends JFrame {
             }
         };
 
+        Runnable deleteSelectedRowsAction = () -> {
+            int[] selectedRows = table.getSelectedRows();
+            if (selectedRows.length > 0) {
+                for (int i = selectedRows.length - 1; i >= 0; i--) {
+                    tableModel.removeRow(selectedRows[i]);
+                }
+            } else {
+                JOptionPane.showMessageDialog(categoryPanel, "No rows selected.", "Selection Error", JOptionPane.ERROR_MESSAGE);
+            }
+        };
         // Inner function for removeAttributeButton action
         Runnable removeAttributeAction = () -> {
             String attributeName = JOptionPane.showInputDialog(categoryPanel, "Enter the name of the attribute to remove:");
@@ -157,7 +167,7 @@ public class AquariumManagementUI extends JFrame {
             }
         };
 
-        // TODO: Add remove row button here
+
 
         // Button Panel
         JPanel buttonPanel = new JPanel();
@@ -170,6 +180,7 @@ public class AquariumManagementUI extends JFrame {
         // Add an action listener to each button
         addAttributeButton.addActionListener(e -> addAttributeAction.run());
         addButton.addActionListener(e -> addRowAction.run());
+        removeButton.addActionListener(e -> deleteSelectedRowsAction.run());
         removeAttributeButton.addActionListener(e -> removeAttributeAction.run());
 
         backButton.addActionListener(e -> cardLayout.show(cardsPanel, "HomePanel"));
