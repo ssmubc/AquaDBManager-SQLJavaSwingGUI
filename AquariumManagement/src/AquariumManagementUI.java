@@ -115,6 +115,50 @@ public class AquariumManagementUI extends JFrame {
 
         categoryPanel.add(inputPanel, BorderLayout.NORTH);
 
+        // Inner function for addAttributeButton action
+        Runnable addAttributeAction = () -> {
+            String attributeName = JOptionPane.showInputDialog(categoryPanel, "Enter the name of the new attribute:");
+            if (attributeName != null && !attributeName.trim().isEmpty()) {
+                tableModel.addColumn(attributeName);
+                addInputField.accept(""); // Add a new input field for the new attribute
+                inputPanel.revalidate();  // Refresh the input panel
+                inputPanel.repaint();
+            }
+        };
+
+        // Inner function for addButton action
+        Runnable addRowAction = () -> {
+            if (inputFields.stream().allMatch(field -> !field.getText().trim().isEmpty())) {
+                Object[] row = inputFields.stream().map(JTextField::getText).toArray();
+                tableModel.addRow(row);
+                inputFields.forEach(field -> field.setText("")); // Clear input fields
+            } else {
+                JOptionPane.showMessageDialog(categoryPanel, "Please fill in all fields.", "Input Error", JOptionPane.ERROR_MESSAGE);
+            }
+        };
+
+        // Inner function for removeAttributeButton action
+        Runnable removeAttributeAction = () -> {
+            String attributeName = JOptionPane.showInputDialog(categoryPanel, "Enter the name of the attribute to remove:");
+            if (attributeName != null && !attributeName.trim().isEmpty()) {
+                int colIndex = tableModel.findColumn(attributeName);
+                if (colIndex != -1) {
+                    TableColumn toRemove = table.getColumnModel().getColumn(colIndex);
+                    table.removeColumn(toRemove); // Remove the column from the view
+                    tableModel.setColumnCount(tableModel.getColumnCount() - 1); // Update the column count
+                    JTextField fieldToRemove = inputFields.get(colIndex);
+                    inputPanel.remove(fieldToRemove);
+                    inputFields.remove(fieldToRemove);
+                    inputPanel.revalidate();
+                    inputPanel.repaint();
+                } else {
+                    JOptionPane.showMessageDialog(categoryPanel, "Attribute not found.", "Error", JOptionPane.ERROR_MESSAGE);
+                }
+            }
+        };
+
+        // TODO: Add remove row button here
+
         // Button Panel
         JPanel buttonPanel = new JPanel();
         JButton addButton = new JButton("Add " + category);
@@ -123,52 +167,10 @@ public class AquariumManagementUI extends JFrame {
         JButton addAttributeButton = new JButton("Add Attribute");
         JButton removeAttributeButton = new JButton("Remove Attribute");
 
-        // Add an action listener to the add attribute button
-        addAttributeButton.addActionListener(e -> {
-            String attributeName = JOptionPane.showInputDialog(categoryPanel, "Enter the name of the new attribute:");
-            if (attributeName != null && !attributeName.trim().isEmpty()) {
-                tableModel.addColumn(attributeName);
-                addInputField.accept(""); // Add a new input field for the new attribute
-                inputPanel.revalidate();  // Refresh the input panel
-                inputPanel.repaint();
-            }
-        });
-
-        // Add an action listener to the add button for adding new data rows
-        addButton.addActionListener(e -> {
-            // Check if input fields are filled out
-            if (inputFields.stream().allMatch(field -> !field.getText().trim().isEmpty())) {
-                Object[] row = inputFields.stream().map(JTextField::getText).toArray();
-                tableModel.addRow(row);
-                inputFields.forEach(field -> field.setText("")); // Clear input fields
-            } else {
-                JOptionPane.showMessageDialog(categoryPanel, "Please fill in all fields.", "Input Error", JOptionPane.ERROR_MESSAGE);
-            }
-        });
-
-        removeAttributeButton.addActionListener(e -> {
-            String attributeName = JOptionPane.showInputDialog(categoryPanel, "Enter the name of the attribute to remove:");
-            if (attributeName != null && !attributeName.trim().isEmpty()) {
-                // Find the column index by the attribute (column) name
-                int colIndex = tableModel.findColumn(attributeName);
-                if (colIndex != -1) {
-                    TableColumn toRemove = table.getColumnModel().getColumn(colIndex);
-                    table.removeColumn(toRemove); // Remove the column from the view
-                    tableModel.setColumnCount(tableModel.getColumnCount() - 1); // Update the column count
-
-                    // Remove the corresponding input field
-                    JTextField fieldToRemove = inputFields.get(colIndex);
-                    inputPanel.remove(fieldToRemove);
-                    inputFields.remove(fieldToRemove);
-
-                    // Refresh the input panel
-                    inputPanel.revalidate();
-                    inputPanel.repaint();
-                } else {
-                    JOptionPane.showMessageDialog(categoryPanel, "Attribute not found.", "Error", JOptionPane.ERROR_MESSAGE);
-                }
-            }
-        });
+        // Add an action listener to each button
+        addAttributeButton.addActionListener(e -> addAttributeAction.run());
+        addButton.addActionListener(e -> addRowAction.run());
+        removeAttributeButton.addActionListener(e -> removeAttributeAction.run());
 
         backButton.addActionListener(e -> cardLayout.show(cardsPanel, "HomePanel"));
 
