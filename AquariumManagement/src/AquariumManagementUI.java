@@ -44,7 +44,7 @@ public class AquariumManagementUI extends JFrame {
         homePanel.add(connectButton);
 
         // Create and add each category panel to the card layout and the HashMap
-        String[] categories = {"Animal", "Plant", "Exhibit", "Staff", "Custodian", "Aquarist", "Veterinarian"};
+        String[] categories = {"Animal", "Exhibit", "Custodian", "Aquarist", "Veterinarian"};
         for (String category : categories) {
             JPanel categoryPanel = createCategoryPanel(category);
             cardsPanel.add(categoryPanel, category + "Panel");
@@ -61,11 +61,29 @@ public class AquariumManagementUI extends JFrame {
         inventoryButton.addActionListener(e -> inventoryPanel());
         homePanel.add(inventoryButton);
 
+
+        // adds the button for closing DB
+        JButton staffButton = new JButton("Manage Staff");
+        staffButton.addActionListener(e -> staffPanel());
+        homePanel.add(staffButton);
+
+        // adds the button for closing DB
+        JButton plantButton = new JButton("Manage Plant");
+        plantButton.addActionListener(e -> grownInPlantPanel());
+        homePanel.add(plantButton);
+
+        JButton vendorReputationButton = new JButton("Manage Vendor Reputation");
+        vendorReputationButton.addActionListener(e -> VendorReputationPanel());
+        homePanel.add(vendorReputationButton);
+
+        JButton vendorLogisticsButton = new JButton("Manage Vendor Logistics");
+        vendorLogisticsButton.addActionListener(e -> vendorLogisticsPanel());
+        homePanel.add(vendorLogisticsButton);
+
         // adds the button for closing DB
         JButton closeButton = new JButton("Close connection");
         closeButton.addActionListener(e -> closeDBPanel());
         homePanel.add(closeButton);
-
 
         pack();
         setLocationRelativeTo(null);
@@ -256,7 +274,7 @@ public class AquariumManagementUI extends JFrame {
     private void addInventoryPanel(JFrame DBFrame, JTextField idTextField, JTextField locationField) {
         // calls method from AquariumManagementDB()
         // converts fields to strings
-        Integer id = Integer.parseInt(idTextField.getText());
+        int id = Integer.parseInt(idTextField.getText());
         String location = locationField.getText();
 
         boolean status = db.insertInventory(id, location);
@@ -266,6 +284,428 @@ public class AquariumManagementUI extends JFrame {
             JOptionPane.showMessageDialog(DBFrame, "Error adding entry to database");
         }
     }
+
+    // FOR STAFF
+    private void staffPanel() {
+        JFrame DBframe = new JFrame("Staff");
+        DBframe.setSize(400, 200);
+
+        // Create a panel to hold the components
+        JPanel DBpanel = new JPanel();
+        DBpanel.setLayout(new GridLayout(0, 2));
+        DBframe.add(DBpanel);
+
+        // Create labels and text fields for staff details
+        JLabel idLabel = new JLabel("Id:");
+        JTextField idTextField = new JTextField(20);
+
+        JLabel salaryLabel = new JLabel("Salary:");
+        JTextField salaryTextField = new JTextField(20);
+
+        JLabel nameLabel = new JLabel("Name:");
+        JTextField nameTextField = new JTextField(20);
+
+        JLabel dateHiredLabel = new JLabel("Date Hired (YYYY-MM-DD):");
+        JTextField dateHiredTextField = new JTextField(20);
+
+        // Add Staff to Oracle DB button
+        JButton addButton = new JButton("Add Staff to Oracle DB");
+        addButton.addActionListener(e -> addStaffPanel(DBframe, idTextField, salaryTextField, nameTextField, dateHiredTextField));
+
+        // Update Staff in Oracle DB button
+        JButton updateButton = new JButton("Update Staff in Oracle DB");
+        updateButton.addActionListener(e -> updateStaffPanel(DBframe, idTextField, salaryTextField, nameTextField, dateHiredTextField));
+
+        JButton deleteButton = new JButton("Delete Staff from Oracle DB");
+        deleteButton.addActionListener(e -> deleteStaffPanel(DBframe, idTextField));
+        DBpanel.add(deleteButton);
+
+
+        // Add components to panel
+        DBpanel.add(idLabel);
+        DBpanel.add(idTextField);
+        DBpanel.add(salaryLabel);
+        DBpanel.add(salaryTextField);
+        DBpanel.add(nameLabel);
+        DBpanel.add(nameTextField);
+        DBpanel.add(dateHiredLabel);
+        DBpanel.add(dateHiredTextField);
+        DBpanel.add(addButton);
+        DBpanel.add(updateButton);
+
+        // Show the frame
+        DBframe.setVisible(true);
+    }
+
+    private void addStaffPanel(JFrame DBFrame, JTextField idTextField, JTextField salaryTextField, JTextField nameTextField, JTextField dateHiredTextField) {
+        try {
+            // Convert fields to appropriate types
+            int id = Integer.parseInt(idTextField.getText());
+            float salary = Float.parseFloat(salaryTextField.getText());
+            String name = nameTextField.getText();
+            String dateHired = dateHiredTextField.getText();
+
+            System.out.println("Here it works");
+
+            // Call method from AquariumManagementDB
+            boolean status = db.insertStaff(id, salary, name, dateHired);
+            if (status) {
+                System.out.println("Here it works");
+                JOptionPane.showMessageDialog(DBFrame, "Staff entry has been added successfully");
+            } else {
+                JOptionPane.showMessageDialog(DBFrame, "Error adding staff entry to database");
+            }
+        } catch (NumberFormatException ex) {
+            JOptionPane.showMessageDialog(DBFrame, "Invalid input. Please check the data types.", "Input Error", JOptionPane.ERROR_MESSAGE);
+        }
+    }
+
+    private void updateStaffPanel(JFrame DBFrame, JTextField idTextField, JTextField salaryTextField, JTextField nameTextField, JTextField dateHiredTextField) {
+        try {
+            // Convert fields to appropriate types
+            int id = Integer.parseInt(idTextField.getText());
+            float salary = Float.parseFloat(salaryTextField.getText());
+            String name = nameTextField.getText();
+            String dateHired = dateHiredTextField.getText();
+
+            // Call method from AquariumManagementDB to update staff
+            boolean status = db.updateStaff(id, salary, name, dateHired);
+            if (status) {
+                JOptionPane.showMessageDialog(DBFrame, "Staff entry has been updated successfully");
+            } else {
+                JOptionPane.showMessageDialog(DBFrame, "Error updating staff entry in database");
+            }
+        } catch (NumberFormatException ex) {
+            JOptionPane.showMessageDialog(DBFrame, "Invalid input. Please check the data types.", "Input Error", JOptionPane.ERROR_MESSAGE);
+        } catch (Exception ex) {
+            JOptionPane.showMessageDialog(DBFrame, "An error occurred: " + ex.getMessage(), "Update Error", JOptionPane.ERROR_MESSAGE);
+        }
+    }
+
+    private void deleteStaffPanel(JFrame DBFrame, JTextField idTextField) {
+        try {
+            // Convert ID field to appropriate type
+            int id = Integer.parseInt(idTextField.getText());
+
+            // Call method from AquariumManagementDB to delete staff
+            boolean status = db.deleteStaff(id);
+            if (status) {
+                JOptionPane.showMessageDialog(DBFrame, "Staff entry has been deleted successfully");
+            } else {
+                JOptionPane.showMessageDialog(DBFrame, "No such entry exists, nothing to delete");
+            }
+        } catch (NumberFormatException ex) {
+            JOptionPane.showMessageDialog(DBFrame, "Invalid ID input. Please enter a numeric ID.", "Input Error", JOptionPane.ERROR_MESSAGE);
+        } catch (Exception ex) {
+            JOptionPane.showMessageDialog(DBFrame, "An error occurred: " + ex.getMessage(), "Deletion Error", JOptionPane.ERROR_MESSAGE);
+        }
+    }
+
+    private void grownInPlantPanel() {
+        JFrame DBframe = new JFrame("Grown In Plant");
+        DBframe.setSize(400, 300); // Adjusted for additional fields
+
+        // Create a panel to hold the components
+        JPanel DBpanel = new JPanel();
+        DBpanel.setLayout(new GridLayout(0, 2)); // 2 columns for label and text field
+        DBframe.add(DBpanel);
+
+        // Create labels and text fields for plant details
+        JLabel plantIdLabel = new JLabel("Plant ID:");
+        JTextField plantIdTextField = new JTextField(20);
+        JLabel speciesLabel = new JLabel("Species:");
+        JTextField speciesTextField = new JTextField(20);
+        JLabel tempLabel = new JLabel("Living Temp:");
+        JTextField tempTextField = new JTextField(20);
+        JLabel lightLabel = new JLabel("Living Light:");
+        JTextField lightTextField = new JTextField(20);
+        JLabel waterTankIdLabel = new JLabel("Water Tank ID:");
+        JTextField waterTankIdTextField = new JTextField(20);
+
+        // Add Plant to Oracle DB button
+        JButton addButton = new JButton("Add Plant to Oracle DB");
+        addButton.addActionListener(e -> addPlantPanel(DBframe, plantIdTextField, speciesTextField, tempTextField, lightTextField, waterTankIdTextField));
+
+        // Update Plant in Oracle DB button (assuming you have an update method)
+        JButton updateButton = new JButton("Update Plant in Oracle DB");
+        updateButton.addActionListener(e -> updatePlantPanel(DBframe, plantIdTextField, speciesTextField, tempTextField, lightTextField, waterTankIdTextField));
+
+        // Delete Plant from Oracle DB button (assuming you have a delete method)
+        JButton deleteButton = new JButton("Delete Plant from Oracle DB");
+        deleteButton.addActionListener(e -> deletePlantPanel(DBframe, plantIdTextField));
+
+        // Add components to panel
+        DBpanel.add(plantIdLabel);
+        DBpanel.add(plantIdTextField);
+        DBpanel.add(speciesLabel);
+        DBpanel.add(speciesTextField);
+        DBpanel.add(tempLabel);
+        DBpanel.add(tempTextField);
+        DBpanel.add(lightLabel);
+        DBpanel.add(lightTextField);
+        DBpanel.add(waterTankIdLabel);
+        DBpanel.add(waterTankIdTextField);
+        DBpanel.add(addButton);
+        DBpanel.add(updateButton);
+        DBpanel.add(deleteButton); // You may need to adjust the layout for this extra button
+
+        // Show the frame
+        DBframe.setVisible(true);
+    }
+
+    private void addPlantPanel(JFrame DBFrame, JTextField plantIdTextField, JTextField speciesTextField, JTextField tempTextField, JTextField lightTextField, JTextField waterTankIdTextField) {
+        try {
+            int plantId = Integer.parseInt(plantIdTextField.getText());
+            String species = speciesTextField.getText();
+            float livingTemp = Float.parseFloat(tempTextField.getText());
+            float livingLight = Float.parseFloat(lightTextField.getText());
+            int waterTankId = Integer.parseInt(waterTankIdTextField.getText());
+
+            boolean status = db.insertPlant(plantId, species, livingTemp, livingLight, waterTankId);
+            if (status) {
+                JOptionPane.showMessageDialog(DBFrame, "Plant entry has been added successfully");
+            } else {
+                JOptionPane.showMessageDialog(DBFrame, "Error adding plant entry to database");
+            }
+        } catch (NumberFormatException ex) {
+            JOptionPane.showMessageDialog(DBFrame, "Invalid input. Please check the data types.", "Input Error", JOptionPane.ERROR_MESSAGE);
+        }
+    }
+
+    private void updatePlantPanel(JFrame DBFrame, JTextField plantIdTextField, JTextField speciesTextField, JTextField tempTextField, JTextField lightTextField, JTextField waterTankIdTextField) {
+        try {
+            int plantId = Integer.parseInt(plantIdTextField.getText());
+            String species = speciesTextField.getText();
+            float livingTemp = Float.parseFloat(tempTextField.getText());
+            float livingLight = Float.parseFloat(lightTextField.getText());
+            int waterTankId = Integer.parseInt(waterTankIdTextField.getText());
+
+            boolean status = db.updatePlant(plantId, species, livingTemp, livingLight, waterTankId);
+            if (status) {
+                JOptionPane.showMessageDialog(DBFrame, "Plant entry has been updated successfully");
+            } else {
+                JOptionPane.showMessageDialog(DBFrame, "Error updating plant entry in database");
+            }
+        } catch (NumberFormatException ex) {
+            JOptionPane.showMessageDialog(DBFrame, "Invalid input. Please check the data types.", "Input Error", JOptionPane.ERROR_MESSAGE);
+        }
+    }
+
+    private void deletePlantPanel(JFrame DBFrame, JTextField plantIdTextField) {
+        try {
+            int plantId = Integer.parseInt(plantIdTextField.getText());
+
+            boolean status = db.deletePlant(plantId);
+            if (status) {
+                JOptionPane.showMessageDialog(DBFrame, "Plant entry has been deleted successfully");
+            } else {
+                JOptionPane.showMessageDialog(DBFrame, "No such plant entry exists, nothing to delete");
+            }
+        } catch (NumberFormatException ex) {
+            JOptionPane.showMessageDialog(DBFrame, "Invalid plant ID input. Please enter a numeric plant ID.", "Input Error", JOptionPane.ERROR_MESSAGE);
+        }
+    }
+
+    private void VendorReputationPanel() {
+        JFrame DBframe = new JFrame("Vendor Reputation");
+        DBframe.setSize(400, 200); // Size adjusted for fewer fields
+
+        // Create a panel to hold the components
+        JPanel DBpanel = new JPanel();
+        DBpanel.setLayout(new GridLayout(0, 2)); // 2 columns for label and text field
+        DBframe.add(DBpanel);
+
+        // Create labels and text fields for vendor details
+        JLabel vendorNameLabel = new JLabel("Vendor Name:");
+        JTextField vendorNameTextField = new JTextField(20);
+        JLabel marketRatingLabel = new JLabel("Market Rating:");
+        JTextField marketRatingTextField = new JTextField(20);
+
+        // Add Vendor to Oracle DB button
+        JButton addButton = new JButton("Add Vendor to Oracle DB");
+        addButton.addActionListener(e -> addVendorPanel(DBframe, vendorNameTextField, marketRatingTextField));
+
+        // Update Vendor in Oracle DB button (assuming you have an update method)
+        JButton updateButton = new JButton("Update Vendor in Oracle DB");
+        updateButton.addActionListener(e -> updateVendorPanel(DBframe, vendorNameTextField, marketRatingTextField));
+
+        // Delete Vendor from Oracle DB button (assuming you have a delete method)
+        JButton deleteButton = new JButton("Delete Vendor from Oracle DB");
+        deleteButton.addActionListener(e -> deleteVendorPanel(DBframe, vendorNameTextField));
+
+        // Add components to panel
+        DBpanel.add(vendorNameLabel);
+        DBpanel.add(vendorNameTextField);
+        DBpanel.add(marketRatingLabel);
+        DBpanel.add(marketRatingTextField);
+        DBpanel.add(addButton);
+        DBpanel.add(updateButton);
+        DBpanel.add(deleteButton);
+
+        // Show the frame
+        DBframe.setVisible(true);
+    }
+
+
+
+
+
+
+
+    // Method to add a new vendor reputation record
+    private void addVendorPanel(JFrame DBFrame, JTextField vendorNameTextField, JTextField marketRatingTextField) {
+        try {
+            String vendorName = vendorNameTextField.getText();
+            String marketRating = marketRatingTextField.getText();
+
+            boolean status = db.insertVendor(vendorName, marketRating);
+            if (status) {
+                JOptionPane.showMessageDialog(DBFrame, "Vendor reputation entry has been added successfully");
+            } else {
+                JOptionPane.showMessageDialog(DBFrame, "Error adding vendor reputation entry to database");
+            }
+        } catch (Exception ex) {
+            JOptionPane.showMessageDialog(DBFrame, "An error occurred: " + ex.getMessage(), "Input Error", JOptionPane.ERROR_MESSAGE);
+        }
+    }
+
+    // Method to update an existing vendor reputation record
+    private void updateVendorPanel(JFrame DBFrame, JTextField vendorNameTextField, JTextField marketRatingTextField) {
+        try {
+            String vendorName = vendorNameTextField.getText();
+            String marketRating = marketRatingTextField.getText();
+
+            boolean status = db.updateVendor(vendorName, marketRating);
+            if (status) {
+                JOptionPane.showMessageDialog(DBFrame, "Vendor reputation entry has been updated successfully");
+            } else {
+                JOptionPane.showMessageDialog(DBFrame, "Error updating vendor reputation entry in database");
+            }
+        } catch (Exception ex) {
+            JOptionPane.showMessageDialog(DBFrame, "An error occurred: " + ex.getMessage(), "Update Error", JOptionPane.ERROR_MESSAGE);
+        }
+    }
+
+    // Method to delete an existing vendor reputation record
+    private void deleteVendorPanel(JFrame DBFrame, JTextField vendorNameTextField) {
+        try {
+            String vendorName = vendorNameTextField.getText();
+
+            boolean status = db.deleteVendor(vendorName);
+            if (status) {
+                JOptionPane.showMessageDialog(DBFrame, "Vendor reputation entry has been deleted successfully");
+            } else {
+                JOptionPane.showMessageDialog(DBFrame, "No such vendor reputation entry exists, nothing to delete");
+            }
+        } catch (Exception ex) {
+            JOptionPane.showMessageDialog(DBFrame, "An error occurred: " + ex.getMessage(), "Deletion Error", JOptionPane.ERROR_MESSAGE);
+        }
+    }
+
+    private void vendorLogisticsPanel() {
+        JFrame DBframe = new JFrame("Vendor Logistics");
+        DBframe.setSize(500, 300);
+
+        // Create a panel to hold the components
+        JPanel DBpanel = new JPanel();
+        DBpanel.setLayout(new GridLayout(0, 2));
+        DBframe.add(DBpanel);
+
+        // Create labels and text fields for vendor logistics details
+        JLabel idLabel = new JLabel("ID:");
+        JTextField idTextField = new JTextField(20);
+        JLabel logisticsNameLabel = new JLabel("Logistics Name:");
+        JTextField logisticsNameTextField = new JTextField(20);
+        JLabel addressLabel = new JLabel("Address:");
+        JTextField addressTextField = new JTextField(20);
+
+        // Add Vendor Logistics to Oracle DB button
+        JButton addButton = new JButton("Add Vendor Logistics to Oracle DB");
+        addButton.addActionListener(e -> addVendorLogisticsPanel(DBframe, idTextField, logisticsNameTextField, addressTextField));
+
+        // Update Vendor Logistics in Oracle DB button
+        JButton updateButton = new JButton("Update Vendor Logistics in Oracle DB");
+        updateButton.addActionListener(e -> updateVendorLogisticsPanel(DBframe, idTextField, logisticsNameTextField, addressTextField));
+
+        // Delete Vendor Logistics from Oracle DB button
+        JButton deleteButton = new JButton("Delete Vendor Logistics from Oracle DB");
+        deleteButton.addActionListener(e -> deleteVendorLogisticsPanel(DBframe, idTextField));
+
+        // Add components to panel
+        DBpanel.add(idLabel);
+        DBpanel.add(idTextField);
+        DBpanel.add(logisticsNameLabel);
+        DBpanel.add(logisticsNameTextField);
+        DBpanel.add(addressLabel);
+        DBpanel.add(addressTextField);
+        DBpanel.add(addButton);
+        DBpanel.add(updateButton);
+        DBpanel.add(deleteButton);
+
+        // Show the frame
+        DBframe.setVisible(true);
+    }
+
+    // Method to add a new vendor logistics record
+    private void addVendorLogisticsPanel(JFrame DBFrame, JTextField idTextField, JTextField logisticsNameTextField, JTextField addressTextField) {
+        try {
+            int id = Integer.parseInt(idTextField.getText());
+            String logisticsName = logisticsNameTextField.getText();
+            String address = addressTextField.getText();
+
+            boolean status = db.insertVendorLogistics(id, logisticsName, address);
+            if (status) {
+                JOptionPane.showMessageDialog(DBFrame, "Vendor logistics entry has been added successfully");
+            } else {
+                JOptionPane.showMessageDialog(DBFrame, "Error adding vendor logistics entry to database");
+            }
+        } catch (NumberFormatException ex) {
+            JOptionPane.showMessageDialog(DBFrame, "Invalid input for ID. Please enter a numeric value.", "Input Error", JOptionPane.ERROR_MESSAGE);
+        } catch (Exception ex) {
+            JOptionPane.showMessageDialog(DBFrame, "An error occurred: " + ex.getMessage(), "Input Error", JOptionPane.ERROR_MESSAGE);
+        }
+    }
+
+    // Method to update an existing vendor logistics record
+    private void updateVendorLogisticsPanel(JFrame DBFrame, JTextField idTextField, JTextField logisticsNameTextField, JTextField addressTextField) {
+        try {
+            int id = Integer.parseInt(idTextField.getText());
+            String logisticsName = logisticsNameTextField.getText();
+            String address = addressTextField.getText();
+
+            boolean status = db.updateVendorLogistics(id, logisticsName, address);
+            if (status) {
+                JOptionPane.showMessageDialog(DBFrame, "Vendor logistics entry has been updated successfully");
+            } else {
+                JOptionPane.showMessageDialog(DBFrame, "Error updating vendor logistics entry in database");
+            }
+        } catch (NumberFormatException ex) {
+            JOptionPane.showMessageDialog(DBFrame, "Invalid input for ID. Please enter a numeric value.", "Input Error", JOptionPane.ERROR_MESSAGE);
+        } catch (Exception ex) {
+            JOptionPane.showMessageDialog(DBFrame, "An error occurred: " + ex.getMessage(), "Update Error", JOptionPane.ERROR_MESSAGE);
+        }
+    }
+
+    // Method to delete an existing vendor logistics record
+    private void deleteVendorLogisticsPanel(JFrame DBFrame, JTextField idTextField) {
+        try {
+            int id = Integer.parseInt(idTextField.getText());
+
+            boolean status = db.deleteVendorLogistics(id);
+            if (status) {
+                JOptionPane.showMessageDialog(DBFrame, "Vendor logistics entry has been deleted successfully");
+            } else {
+                JOptionPane.showMessageDialog(DBFrame, "No such vendor logistics entry exists, nothing to delete");
+            }
+        } catch (NumberFormatException ex) {
+            JOptionPane.showMessageDialog(DBFrame, "Invalid input for ID. Please enter a numeric value.", "Input Error", JOptionPane.ERROR_MESSAGE);
+        } catch (Exception ex) {
+            JOptionPane.showMessageDialog(DBFrame, "An error occurred: " + ex.getMessage(), "Deletion Error", JOptionPane.ERROR_MESSAGE);
+        }
+    }
+
+
+
 
     private void closeDBPanel() {
         JFrame DBframe = new JFrame("Oracle DB Connection");
