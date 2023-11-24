@@ -1,10 +1,8 @@
 package AquariumManagement.src;
 
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.SQLException;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
+import java.sql.*;
+import java.util.ArrayList;
+import java.util.List;
 
 
 public class AquariumManagementDB {
@@ -63,6 +61,22 @@ public class AquariumManagementDB {
             System.out.println("Data was not inserted properly");
             return false;
         }
+    }
+
+    public static List<String> getColumnNames(String tableName) {
+        List<String> columnNames = new ArrayList<>();
+        try {
+            DatabaseMetaData metaData = connection.getMetaData();
+            ResultSet columns = metaData.getColumns(null, null, tableName, null);
+            while (columns.next()) {
+                String columnName = columns.getString("COLUMN_NAME");
+                columnNames.add(columnName);
+            }
+        } catch (SQLException e) {
+            System.out.println(e.getMessage());
+        }
+
+        return columnNames;
     }
 
     public boolean updateInventory(int id, String location) {
@@ -132,6 +146,8 @@ public class AquariumManagementDB {
 
         preparedStatement.executeUpdate();
     }
+
+
 
 
 }
