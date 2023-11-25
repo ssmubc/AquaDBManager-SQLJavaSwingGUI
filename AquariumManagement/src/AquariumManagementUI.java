@@ -3,6 +3,7 @@ package AquariumManagement.src;
 import javax.swing.*;
 import java.awt.*;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -15,6 +16,7 @@ public class AquariumManagementUI extends JFrame {
 
     private CardLayout cardLayout;
     private JPanel cardsPanel;
+    private Map<String, JPanel> categoryPanels; // HashMap to store category panels
     // declaring the database
     private AquariumManagementDB db;
 
@@ -22,6 +24,7 @@ public class AquariumManagementUI extends JFrame {
     public AquariumManagementUI() {
         super("Aquarium Manager");
         tablePackages = new ArrayList<TablePackage>();;
+        categoryPanels = new HashMap<>();
         connectDBPanel(); // connect DB and launch app
     }
 
