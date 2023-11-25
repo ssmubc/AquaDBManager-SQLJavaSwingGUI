@@ -12,30 +12,38 @@ import static AquariumManagement.src.AquariumManagementDB.getColumnNames;
 public class AquariumManagementUI extends JFrame {
     private static final int WIDTH = 1000;
     private static final int HEIGHT = 800;
-    Dimension buttonSize = new Dimension(50, 15);
+    public static Dimension buttonSize = new Dimension(50, 15);
 
     private CardLayout cardLayout;
     private JPanel cardsPanel;
-    private Map<String, JPanel> categoryPanels; // HashMap to store category panels
     // declaring the database
     private AquariumManagementDB db;
 
-    private List<TablePackage> tablePackages;
+    private List<TablePackage> showAllTablePackages;
+    private HashMap<String, ManagerPanelPackage> managerPanelPackageMap;
     public AquariumManagementUI() {
         super("Aquarium Manager");
-        tablePackages = new ArrayList<TablePackage>();;
-        categoryPanels = new HashMap<>();
+        showAllTablePackages = new ArrayList<TablePackage>();
+        managerPanelPackageMap = new HashMap<String, ManagerPanelPackage>();
         connectDBPanel(); // connect DB and launch app
     }
 
     /*
     TODO: change this to parse data read from DB instead of hard coding if time allows
      */
-    private void initializeTables() {
-        tablePackages.add(new TablePackage("Animal", getColumnNames("ANIMAL")));
-        tablePackages.add(new TablePackage("Staff", getColumnNames("STAFF")));
-        tablePackages.add(new TablePackage("Item", getColumnNames("ITEMQUANTITY")));
-        tablePackages.add(new TablePackage("Item", getColumnNames("ITEMQUANTITY")));
+    private void initializeShowALlTables() {
+        showAllTablePackages.add(new TablePackage("Animal", getColumnNames("ANIMAL")));
+        showAllTablePackages.add(new TablePackage("Staff", getColumnNames("STAFF")));
+        showAllTablePackages.add(new TablePackage("Item", getColumnNames("ITEMQUANTITY")));
+        showAllTablePackages.add(new TablePackage("Vendor", getColumnNames("VENDORLOGISTICS")));
+        showAllTablePackages.add(new TablePackage("Plant", getColumnNames("GROWN_IN_PLANT")));
+        showAllTablePackages.add(new TablePackage("Tank", getColumnNames("WATERTANKLOGISTICS")));
+    }
+
+    private void initializeManagers() {
+        String[][] inventoryFields = {{"ID", "Enter ID"},{"Location", "Enter Location"}};
+
+        managerPanelPackageMap.put("Inventory",new ManagerPanelPackage("Inventory", inventoryFields));
     }
 
     private void initializeComponents() {
@@ -52,9 +60,9 @@ public class AquariumManagementUI extends JFrame {
         JPanel buttonPanel = new JPanel(new GridLayout(0, 2, 10, 10)); // 0 means any number of rows, and 2 columns
         homePanel.add(buttonPanel, BorderLayout.CENTER);
 
-        // Create and add each category panel to the card layout and the HashMap
-        for (TablePackage tp : tablePackages) {
-            JPanel categoryPanel = createCategoryPanel(tp);
+        // Add show all list
+        for (TablePackage tp : showAllTablePackages) {
+            JPanel categoryPanel = createListAllPanel(tp);
             cardsPanel.add(categoryPanel, tp.getName() + "Panel");
 
             JButton button = new JButton("Show All " + tp.getName());
@@ -64,12 +72,20 @@ public class AquariumManagementUI extends JFrame {
         }
 
         add(cardsPanel, BorderLayout.CENTER);
-        // adds the button for closing DB
-        JButton inventoryButton = new JButton("Manage Inventory");
-        inventoryButton.setPreferredSize(buttonSize);
-        inventoryButton.addActionListener(e -> inventoryPanel());
-        buttonPanel.add(inventoryButton);
 
+
+        ManagerPanelPackage inventoryPackage = managerPanelPackageMap.get("Inventory");
+        buttonPanel.add(inventoryPackage.getMainButton());
+
+//
+//
+//
+//        // adds the button for closing DB
+//        JButton inventoryButton = new JButton("Manage Inventory");
+//        inventoryButton.setPreferredSize(buttonSize);
+//        inventoryButton.addActionListener(e -> inventoryPanel());
+//        buttonPanel.add(inventoryButton);
+//
 
         // adds the button for closing DB
         JButton closeButton = new JButton("Close connection");
@@ -93,40 +109,17 @@ public class AquariumManagementUI extends JFrame {
         return homePanel;
     }
 
-    private JPanel createCategoryPanel(TablePackage tablePackage) {
+    private JPanel createListAllPanel(TablePackage tablePackage) {
         JPanel categoryPanel = new JPanel(new BorderLayout());
         categoryPanel.add(new JScrollPane(tablePackage.getTable()), BorderLayout.CENTER);
 
-
         // Button Panel
         JPanel buttonPanel = new JPanel();
-        JButton addButton = new JButton("Add " + tablePackage.getName());
-        JButton removeButton = new JButton("Remove " + tablePackage.getName());
         JButton backButton = new JButton("Back to Home");
-        JButton addAttributeButton = new JButton("Add Attribute");
-        JButton removeAttributeButton = new JButton("Remove Attribute");
-
-        // Add an action listener to each button
-        addAttributeButton.addActionListener(e -> {
-            tablePackage.addNewColumn();
-        });
-        addButton.addActionListener(e -> {
-            tablePackage.addNewRow();
-        });
-        removeButton.addActionListener(e -> {
-            tablePackage.deleteSelectedRows(categoryPanel);
-        });
-        removeAttributeButton.addActionListener(e -> {
-            tablePackage.deleteSelectedColumn();
-        });
 
         backButton.addActionListener(e -> cardLayout.show(cardsPanel, "HomePanel"));
-
-        buttonPanel.add(addButton);
-        buttonPanel.add(removeButton);
         buttonPanel.add(backButton);
-        buttonPanel.add(addAttributeButton);
-        buttonPanel.add(removeAttributeButton);
+
         categoryPanel.add(buttonPanel, BorderLayout.SOUTH);
 
         return categoryPanel;
@@ -171,7 +164,8 @@ public class AquariumManagementUI extends JFrame {
         if (status) {
             JOptionPane.showMessageDialog(DBframe, "Connected to Oracle DB successfully!");
             DBframe.dispose();
-            initializeTables();
+            initializeShowALlTables();
+            initializeManagers();
             initializeComponents();
         } else {
             JOptionPane.showMessageDialog(DBframe, "Failed to connect to Oracle DB.");
