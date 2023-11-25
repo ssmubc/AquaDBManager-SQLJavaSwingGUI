@@ -1,3 +1,10 @@
 # Default ignored files
 /shelf/
 /workspace.xml
+
+.idea/dataSources.local.xml
+.idea/dataSources.xml
+.idea/dataSources/
+.idea/dataSources/73a58a9b-95d2-4c4a-b334-8321aba2c911.xml
+.idea/
+
