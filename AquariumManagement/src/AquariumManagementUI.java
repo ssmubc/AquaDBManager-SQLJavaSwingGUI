@@ -5,7 +5,6 @@ import java.awt.*;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import static AquariumManagement.src.AquariumManagementDB.getColumnNames;
 
@@ -13,6 +12,7 @@ import static AquariumManagement.src.AquariumManagementDB.getColumnNames;
 public class AquariumManagementUI extends JFrame {
     private static final int WIDTH = 1000;
     private static final int HEIGHT = 800;
+    Dimension buttonSize = new Dimension(50, 15);
 
     private CardLayout cardLayout;
     private JPanel cardsPanel;
@@ -35,6 +35,7 @@ public class AquariumManagementUI extends JFrame {
         tablePackages.add(new TablePackage("Animal", getColumnNames("ANIMAL")));
         tablePackages.add(new TablePackage("Staff", getColumnNames("STAFF")));
         tablePackages.add(new TablePackage("Item", getColumnNames("ITEMQUANTITY")));
+        tablePackages.add(new TablePackage("Item", getColumnNames("ITEMQUANTITY")));
     }
 
     private void initializeComponents() {
@@ -43,37 +44,38 @@ public class AquariumManagementUI extends JFrame {
         setLayout(new BorderLayout());
 
         cardLayout = new CardLayout();
-        cardsPanel = new JPanel(cardLayout);
+        cardsPanel = new JPanel(cardLayout); // show and hide panels using their names
 
         JPanel homePanel = createHomePanel();
         cardsPanel.add(homePanel, "HomePanel");
 
-//        // adds the button for connecting to DB
-//        JButton connectButton = new JButton("Connect to Aquarium Database");
-//        connectButton.addActionListener(e -> connectDBPanel());
-//        homePanel.add(connectButton);
+        JPanel buttonPanel = new JPanel(new GridLayout(0, 2, 10, 10)); // 0 means any number of rows, and 2 columns
+        homePanel.add(buttonPanel, BorderLayout.CENTER);
 
         // Create and add each category panel to the card layout and the HashMap
         for (TablePackage tp : tablePackages) {
             JPanel categoryPanel = createCategoryPanel(tp);
             cardsPanel.add(categoryPanel, tp.getName() + "Panel");
-            categoryPanels.put(tp.getName(), categoryPanel); // Store the panel in the HashMap
 
-            JButton button = new JButton("Manage " + tp.getName());
+            JButton button = new JButton("Show All " + tp.getName());
+            button.setPreferredSize(buttonSize);
             button.addActionListener(e -> cardLayout.show(cardsPanel, tp.getName() + "Panel"));
-            homePanel.add(button);
+            buttonPanel.add(button);
         }
 
         add(cardsPanel, BorderLayout.CENTER);
         // adds the button for closing DB
         JButton inventoryButton = new JButton("Manage Inventory");
+        inventoryButton.setPreferredSize(buttonSize);
         inventoryButton.addActionListener(e -> inventoryPanel());
-        homePanel.add(inventoryButton);
+        buttonPanel.add(inventoryButton);
+
 
         // adds the button for closing DB
         JButton closeButton = new JButton("Close connection");
+        closeButton.setPreferredSize(buttonSize);
         closeButton.addActionListener(e -> closeDBPanel());
-        homePanel.add(closeButton);
+        buttonPanel.add(closeButton);
 
 
         pack();
@@ -83,9 +85,11 @@ public class AquariumManagementUI extends JFrame {
     }
 
     private JPanel createHomePanel() {
-        JPanel homePanel = new JPanel();
-        homePanel.setLayout(new GridLayout(0, 1)); // Adjusted for layout purposes
-        homePanel.add(new JLabel("Welcome to Aquarium Manager!"));
+        // we want welcomeLabel to take the top row by itself
+        JPanel homePanel = new JPanel(new BorderLayout(10, 10)); // margins between components
+        JLabel welcomeLabel = new JLabel("Welcome to Aquarium Manager!", SwingConstants.CENTER);
+        // Add the welcome label to the top of the homePanel
+        homePanel.add(welcomeLabel, BorderLayout.NORTH);
         return homePanel;
     }
 
