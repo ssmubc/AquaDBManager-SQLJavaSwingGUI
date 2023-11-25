@@ -246,5 +246,138 @@ public class AquariumManagementUI extends JFrame {
         }
     };
 
+    private void InventoryHelper(JFrame DBFrame, JTextField idTextField, JTextField locationField, String operation) {
+        // calls method from AquariumManagementDB()
+        // converts fields to strings
+        int id = Integer.parseInt(idTextField.getText());
+        String location = locationField.getText();
+        boolean success = false;
+
+        if (operation == "ADDITION") {
+            success = db.insertInventory(id, location);
+        } else if (operation == "UPDATE") {
+            success = db.updateInventory(id, location);
+        } else if (operation == "DELETE") {
+            success = db.deleteInventory(id);
+        }
+
+        if (success) {
+            JOptionPane.showMessageDialog(DBFrame, "Operation on INVENTORY has been performed successfully");
+        } else {
+            JOptionPane.showMessageDialog(DBFrame, "Operation on INVENTORY encountered an error");
+        }
+    }
+
+    private ArrayList<ArrayList<Object>> InventoryListHelper(JFrame DBFrame, JTextField idTextField, JTextField locationField, String operation) {
+        return null;
+    }
+
+    private void ExhibitHelper(JFrame DBFrame, JTextField idTextField, JTextField nameField, JTextField statusField, String operation) {
+        // calls method from AquariumManagementDB()
+        // converts fields to strings
+        int id = Integer.parseInt(idTextField.getText());
+        String name = nameField.getText();
+        String status = statusField.getText();
+
+        boolean success = false;
+
+        if (operation == "ADDITION") {
+            success = db.insertExhibit(id, name, status);
+        } else if (operation == "UPDATE") {
+            success = db.updateExhibit(id, name, status);
+        } else if (operation == "DELETE") {
+            success = db.deleteExhibit(id);
+        }
+
+        if (success) {
+            JOptionPane.showMessageDialog(DBFrame, "Operation on EXHIBIT has been performed successfully");
+        } else {
+            JOptionPane.showMessageDialog(DBFrame, "Operation on EXHIBIT encountered an error");
+        }
+    }
+
+    private void AnimalHelper(JFrame DBFrame, JTextField idTextField, JTextField nameField, JTextField speciesField,
+                              JTextField ageField, JTextField livingTempField, JTextField waterTankIDField, JTextField veterinarianIDField, String operation) {
+        // calls method from AquariumManagementDB()
+        // converts fields to strings
+        int id = Integer.parseInt(idTextField.getText());
+        String name = nameField.getText();
+        String species = speciesField.getText();
+        int age = Integer.parseInt(ageField.getText());
+        String living_temp = livingTempField.getText();
+        int waterTankID = Integer.parseInt(waterTankIDField.getText());
+        int veterinarianID = Integer.parseInt(veterinarianIDField.getText());
+
+        boolean success = false;
+
+        if (operation == "ADDITION") {
+            success = db.insertAnimal(id, name, species, age, living_temp, waterTankID, veterinarianID);
+        } else if (operation == "UPDATE") {
+            success = db.updateAnimal(id, name, species, age, living_temp, waterTankID, veterinarianID);
+        } else if (operation == "DELETE") {
+            success = db.deleteAnimal(id);
+        }
+
+        if (success) {
+            JOptionPane.showMessageDialog(DBFrame, "Operation on ANIMAL has been performed successfully");
+        } else {
+            JOptionPane.showMessageDialog(DBFrame, "Operation on ANIMAL encountered an error");
+        }
+    }
+
+    private void ItemHelper(JFrame DBFrame, JTextField idTextField, JTextField nameField, JTextField quantityField, JTextField unitField, String operation) {
+        // calls method from AquariumManagementDB()
+        // converts fields to strings or ints
+        int id = Integer.parseInt(idTextField.getText());
+        String name = nameField.getText();
+        int quantity = Integer.parseInt(quantityField.getText());
+        String unit = unitField.getText();
+
+        boolean success = false;
+
+        if (operation == "ADDITION") {
+            success = db.insertItem(id, name, quantity, unit);
+        } else if (operation == "UPDATE") {
+            success = db.updateItem(id, name, quantity, unit);
+        } else if (operation == "DELETE") {
+            success = db.deleteItem(id);
+        }
+
+        if (success) {
+            JOptionPane.showMessageDialog(DBFrame, "Operation on ITEM has been performed successfully");
+        } else {
+            JOptionPane.showMessageDialog(DBFrame, "Operation on ITEM encountered an error");
+        }
+    }
+
+    private void WaterTankHelper(JFrame DBFrame, JTextField idTextField, JTextField nameField, JTextField volumeField,
+                                 JTextField temperatureField, JTextField lightingLevelField, JTextField exhibitIDField, JTextField pHField, String operation) {
+        // calls method from AquariumManagementDB()
+        // converts fields to strings
+        int id = Integer.parseInt(idTextField.getText());
+        String name = nameField.getText();
+        float volume = Float.parseFloat(volumeField.getText());
+        float temperature = Float.parseFloat(temperatureField.getText());
+        String lighting_level = lightingLevelField.getText();
+        int exhibitID = Integer.parseInt(exhibitIDField.getText());
+        float pH = Float.parseFloat(pHField.getText());
+
+        boolean success = false;
+
+        if (operation == "ADDITION") {
+            success = db.insertWaterTank(id, name, volume, temperature, lighting_level, exhibitID, pH);
+        } else if (operation == "UPDATE") {
+            success = db.updateWaterTank(id, name, volume, temperature, lighting_level, exhibitID, pH);
+        } else if (operation == "DELETE") {
+            success = db.deleteWaterTank(id);
+        }
+
+        if (success) {
+            JOptionPane.showMessageDialog(DBFrame, "Operation on WATERTANK has been performed successfully");
+        } else {
+            JOptionPane.showMessageDialog(DBFrame, "Operation on WATERTANK encountered an error");
+        }
+    }
+
 
 }
