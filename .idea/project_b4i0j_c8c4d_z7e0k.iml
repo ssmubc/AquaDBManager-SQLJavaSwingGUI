@@ -17,5 +17,14 @@
       </library>
     </orderEntry>
     <orderEntry type="library" name="ojdbc8" level="application" />
+    <orderEntry type="module-library">
+      <library>
+        <CLASSES>
+          <root url="jar://$MODULE_DIR$/AquariumManagement/resources/json-20210307.jar!/" />
+        </CLASSES>
+        <JAVADOC />
+        <SOURCES />
+      </library>
+    </orderEntry>
   </component>
 </module>

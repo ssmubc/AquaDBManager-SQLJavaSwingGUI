@@ -1,8 +1,11 @@
 package AquariumManagement.src;
 
+import org.json.JSONArray;
+
 import java.sql.*;
-import java.util.List;
 import java.util.ArrayList;
+import java.util.List;
+import org.json.*;
 
 public class AquariumManagementDB {
     private static final String ORACLE_URL = "jdbc:oracle:thin:@localhost:1522:stu";
@@ -48,11 +51,20 @@ public class AquariumManagementDB {
             return false;
         }
     }
-    public boolean insertInventory(int id, String location) {
+    public boolean insertInventory(int id, String location, int shelfNumber, String isFull) {
         String sql = "INSERT INTO INVENTORY (ID, LOCATION) VALUES (?, ?)";
+        String sql2 = "INSERT INTO SHELFININVENTORY(shelf_number, inventory_id, is_full) VALUES (?, ?, ?)";
 
         try {
             InventoryHelper(id, location, sql);
+
+            PreparedStatement preparedStatement2 = connection.prepareStatement(sql2);
+
+            preparedStatement2.setInt(1, shelfNumber);
+            preparedStatement2.setInt(2, id);
+            preparedStatement2.setString(3, isFull);
+
+            preparedStatement2.executeUpdate();
 
             System.out.println("Data inserted successfully.");
             return true;
@@ -79,42 +91,66 @@ public class AquariumManagementDB {
         return columnNames;
     }
 
-    public boolean updateInventory(int id, String location) {
+    public boolean updateInventory(int id, String location, int shelfNumber, String isFull) {
         String sql = "UPDATE INVENTORY SET LOCATION = ? WHERE ID = ?";
+        String sql2 = "UPDATE SHELFININVENTORY SET IS_FULL = ? WHERE SHELF_NUMBER = ? AND INVENTORY_ID = ?";
 
         try {
-            InventoryHelper(id, location, sql);
+            PreparedStatement preparedStatement = connection.prepareStatement(sql);
 
-            System.out.println("Data inserted successfully.");
+            preparedStatement.setString(1, location);
+            preparedStatement.setInt(2, id);
+
+            preparedStatement.executeUpdate();
+
+            PreparedStatement preparedStatement2 = connection.prepareStatement(sql2);
+
+            preparedStatement2.setString(1, isFull);
+            preparedStatement2.setInt(2, shelfNumber);
+            preparedStatement2.setInt(3, id);
+
+            preparedStatement2.executeUpdate();
+
+            System.out.println("Data updated successfully.");
             return true;
 
         } catch (SQLException e) {
-            System.out.println("Data was not inserted properly");
+            System.out.println("Data was not updated properly");
             return false;
         }
     }
 
-    public boolean deleteInventory(int id) {
+    public boolean deleteInventory(int id, int shelfNumber) {
         String sql = "DELETE FROM INVENTORY WHERE ID = ?";
+        String sql2 = "DELETE FROM SHELFININVENTORY WHERE ID = ? AND SHELF_NUMBER = ?";
 
         try {
             PreparedStatement preparedStatement = connection.prepareStatement(sql);
+            PreparedStatement preparedStatement2 = connection.prepareStatement(sql2);
 
             preparedStatement.setInt(1, id);
 
             preparedStatement.executeUpdate();
 
-            System.out.println("Data inserted successfully.");
+            preparedStatement2.setInt(1, id);
+            preparedStatement2.setInt(2, shelfNumber);
+
+            preparedStatement2.executeUpdate();
+
+            System.out.println("Data deleted successfully.");
             return true;
 
         } catch (SQLException e) {
-            System.out.println("Data was not inserted properly");
+            System.out.println("Data was not deleted properly");
             return false;
         }
     }
 
-    public boolean listInventory() {
-        String sql = "SELECT * FROM INVENTORY";
+    public String listInventory() {
+        String sql = "SELECT i.ID, i.LOCATION, s.SHELF_NUMBER, s.IS_FULL " +
+                "FROM INVENTORY i " +
+                "JOIN SHELFININVENTORY s ON i.ID = s.INVENTORY_ID";
+        JSONArray inventoryJSONArray = new JSONArray();
 
         try {
             PreparedStatement preparedStatement = connection.prepareStatement(sql);
@@ -122,19 +158,65 @@ public class AquariumManagementDB {
             ResultSet inventoryResult = preparedStatement.executeQuery();
 
             while (inventoryResult.next()) {
-                int id = inventoryResult .getInt("ID");
+                int id = inventoryResult.getInt("ID");
                 String location = inventoryResult.getString("LOCATION");
+                int shelf_number = inventoryResult.getInt("SHELF_NUMBER");
+                int is_full = inventoryResult.getInt("IS_FULL");
+
+                JSONObject inventoryItem = new JSONObject();
+                inventoryItem.put("ID", id);
+                inventoryItem.put("LOCATION", location);
+                inventoryItem.put("SHELF_NUMBER", shelf_number);
+                inventoryItem.put("IS_FULL", is_full);
+
+                inventoryJSONArray.put(inventoryItem);
+
+                System.out.println("ID: " + id + ", Location: " + location +
+                        ", Shelf Number: " + shelf_number + ", Is Full: " + is_full);
+            }
+
+            System.out.println("Data was listed successfully");
+
+        } catch (SQLException e) {
+            System.out.println("Data was not listed properly");
+        }
+
+        if (inventoryJSONArray.isEmpty()) {
+            return null;
+        }
+        return inventoryJSONArray.toString();
+    }
+
+    public String getInventoryByID(int itemID) {
+        String sql = "SELECT ID, LOCATION FROM INVENTORY WHERE ID = ?";
+        JSONObject inventoryItem = new JSONObject();
+
+        try {
+            PreparedStatement preparedStatement = connection.prepareStatement(sql);
+            preparedStatement.setInt(1, itemID);
+            ResultSet inventoryResult = preparedStatement.executeQuery();
+
+            while (inventoryResult.next()) {
+                int id = inventoryResult.getInt("ID");
+                String location = inventoryResult.getString("LOCATION");
+
+                inventoryItem.put("ID", id);
+                inventoryItem.put("LOCATION", location);
 
                 System.out.println("ID: " + id + ", Location: " + location);
             }
 
-            System.out.println("Data was listed successfully");
-            return true;
+            System.out.println("Data was retrived successfully");
 
         } catch (SQLException e) {
-            System.out.println("Data was not listed properly");
-            return false;
+            System.out.println("Data was not retrived properly");
         }
+
+        if (inventoryItem.isEmpty()) {
+            return null;
+        }
+        return inventoryItem.toString();
+
     }
 
     public boolean insertItem(int id, String name, int quantity, String unit) {
@@ -198,7 +280,23 @@ public class AquariumManagementDB {
         String sql2 = "UPDATE ITEMUNIT SET UNIT = ? WHERE NAME = ?";
 
         try {
-            ItemHelper(id, name, quantity, unit, sql1, sql2);
+            PreparedStatement preparedStatement1 = connection.prepareStatement(sql1);
+            PreparedStatement preparedStatement2 = connection.prepareStatement(sql2);
+
+            // query argument setting for statement 1
+            preparedStatement1.setInt(1, quantity);
+            preparedStatement1.setString(2, name);
+            preparedStatement1.setInt(3, id);
+
+            // query argument setting for statement 2
+            preparedStatement2.setString(1, unit);
+            preparedStatement2.setString(2, name);
+
+            preparedStatement1.executeUpdate();
+            preparedStatement2.executeUpdate();
+
+            preparedStatement1.close();
+            preparedStatement2.close();
 
             System.out.println("Data was inserted properly");
             return true;
@@ -208,10 +306,12 @@ public class AquariumManagementDB {
         }
     }
 
-    public boolean listItems() {
+    public String listItems() {
         String sql = "SELECT iq.ID, iq.NAME, iq.QUANTITY, iu.UNIT " +
                 "FROM ITEMQUANTITY iq " +
                 "JOIN ITEMUNIT iu ON iq.NAME = iu.NAME";
+
+        JSONArray itemsJSONArray = new JSONArray();
 
         try {
             PreparedStatement preparedStatement = connection.prepareStatement(sql);
@@ -223,13 +323,27 @@ public class AquariumManagementDB {
                 int quantity = resultSet.getInt("QUANTITY");
                 String unit = resultSet.getString("UNIT");
 
-                System.out.println("ID: " + id + ", NAME: " + name + ", QUANTITY: " + quantity + ", UNIT: " + unit);
-            }
-            return true;
+                JSONObject item = new JSONObject();
+                item.put("ID", id);
+                item.put("NAME", name);
+                item.put("QUANTITY", quantity);
+                item.put("UNIT", unit);
 
-        } catch (SQLException e) {
-            return false;
-        }
+                itemsJSONArray.put(item);
+
+                System.out.println("ID: " + id + ", NAME: " + name + ", QUANTITY: " + quantity + ", UNIT: " + unit);
+
+            }
+            System.out.println("Data was listed successfully");
+
+            } catch (SQLException e) {
+                System.out.println("Data was not listed properly");
+            }
+
+            if (itemsJSONArray.isEmpty()) {
+                return null;
+            }
+            return itemsJSONArray.toString();
     }
 
 
@@ -527,7 +641,7 @@ public class AquariumManagementDB {
         }
     }
 
-    public boolean listAnimal() {
+    public JSONArray listAnimal() {
         String sql = "SELECT * FROM ANIMAL";
 
         try {
