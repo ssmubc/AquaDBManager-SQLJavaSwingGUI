@@ -337,6 +337,7 @@ public class AquariumManagementUI extends JFrame {
             JOptionPane.showMessageDialog(DBFrame, "Operation on ANIMAL encountered an error");
         }
     }
+    /*
 
     private void ItemHelper(JFrame DBFrame, JTextField idTextField, JTextField nameField, JTextField quantityField, JTextField unitField, String operation) {
         // calls method from AquariumManagementDB()
@@ -391,6 +392,7 @@ public class AquariumManagementUI extends JFrame {
             JOptionPane.showMessageDialog(DBFrame, "Operation on WATERTANK encountered an error");
         }
     }
+    */
 
 
 }
