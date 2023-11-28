@@ -41,6 +41,7 @@ public class AquariumManagementUI extends JFrame {
     }
 
     private void initializeManagers() {
+        // TODO: Add DB NAME and Change inputFieldMap use DB name as key
         String[][] inventoryFields = {{"ID", "Enter ID"},{"Location", "Enter Location"}};
 
         managerPanelPackageMap.put("Inventory",new ManagerPanelPackage("Inventory", inventoryFields));

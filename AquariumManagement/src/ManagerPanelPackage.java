@@ -9,12 +9,14 @@ import static AquariumManagement.src.AquariumManagementUI.buttonSize;
 public class ManagerPanelPackage {
     private String title;
     private JButton mainButton;
+    private JButton searchButton;
     private JButton addButton;
     private JButton updateButton;
     private JButton deleteButton;
 
     private JPanel panel;
     private JPanel buttonPanel;
+    // Map DB Field Name to InputField
     private HashMap<String, ManagerInputField> inputFieldMap;
 
     // input fields: {{String displayName, String placeholder(optional)}}
@@ -46,12 +48,14 @@ public class ManagerPanelPackage {
         panel.add(inputPanel, BorderLayout.CENTER);
 
         // Initialize buttons
+        searchButton = new JButton("Search");
         addButton = new JButton("Add");
         updateButton = new JButton("Update");
         deleteButton = new JButton("Delete");
 
         // Create a panel to hold the buttons in one row
         buttonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER));
+        buttonPanel.add(searchButton);
         buttonPanel.add(addButton);
         buttonPanel.add(updateButton);
         buttonPanel.add(deleteButton);
@@ -84,10 +88,14 @@ public class ManagerPanelPackage {
     }
 
     public JButton getDeleteButton(){
-        return addButton;
+        return deleteButton;
     }
 
     public JButton getUpdateButton(){
-        return addButton;
+        return updateButton;
+    }
+
+    public JButton getSearchButton(){
+        return searchButton;
     }
 }
