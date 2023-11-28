@@ -20,7 +20,7 @@
     <orderEntry type="module-library">
       <library>
         <CLASSES>
-          <root url="jar://$MODULE_DIR$/AquariumManagement/resources/json-20210307.jar!/" />
+          <root url="jar://$MODULE_DIR$/AquariumManagement/resources/json-20231013.jar!/" />
         </CLASSES>
         <JAVADOC />
         <SOURCES />
