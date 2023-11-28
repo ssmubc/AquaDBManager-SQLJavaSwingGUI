@@ -23,39 +23,40 @@ CREATE TABLE Staff (
                        id INTEGER PRIMARY KEY,
                        salary DECIMAL(10, 2) NOT NULL,
                        staff_name VARCHAR(255) NOT NULL,
-                       datehired DATE NOT NULL
+                       datehired VARCHAR(255) NOT NULL,
+                       staff_type VARCHAR(255) NOT NULL
 );
 COMMIT;
 
-INSERT INTO Staff VALUES (100, 1000.50, 'Sam', '2023-10-15');
+INSERT INTO Staff VALUES (100, 1000.50, 'Sam', '2023-10-15', 'Aquarist');
 COMMIT;
-INSERT INTO Staff VALUES (101, 1000.50, 'Anna', '2023-10-15');
+INSERT INTO Staff VALUES (101, 1000.50, 'Anna', '2023-10-15', 'Custodian');
 COMMIT;
-INSERT INTO Staff VALUES (102, 145000.80, 'Kevin', '2023-10-16');
+INSERT INTO Staff VALUES (102, 145000.80, 'Kevin', '2023-10-16', 'Veterinarian');
 COMMIT;
-INSERT INTO Staff VALUES (103, 145000.80, 'John', '2023-10-16');
+INSERT INTO Staff VALUES (103, 145000.80, 'John', '2023-10-16', 'Aquarist');
 COMMIT;
-INSERT INTO Staff VALUES (104, 145000.80, 'Mohammed', '2023-10-17');
+INSERT INTO Staff VALUES (104, 145000.80, 'Mohammed', '2023-10-17', 'Custodian');
 COMMIT;
-INSERT INTO Staff VALUES (105, 145000.80, 'James', '2023-10-17');
+INSERT INTO Staff VALUES (105, 145000.80, 'James', '2023-10-17', 'Veterinarian');
 COMMIT;
-INSERT INTO Staff VALUES (106, 145000.80, 'Wataru', '2023-10-18');
+INSERT INTO Staff VALUES (106, 145000.80, 'Wataru', '2023-10-18', 'Veterinarian');
 COMMIT;
-INSERT INTO Staff VALUES (107, 100000.80, 'Michael', '2022-10-05');
+INSERT INTO Staff VALUES (107, 100000.80, 'Michael', '2022-10-05', 'Aquarist');
 COMMIT;
-INSERT INTO Staff VALUES (108, 1000.50, 'Kim', '2022-10-30');
+INSERT INTO Staff VALUES (108, 1000.50, 'Kim', '2022-10-30', 'Aquarist');
 COMMIT;
-INSERT INTO Staff VALUES (109, 1000.50, 'Danny', '2022-09-15');
+INSERT INTO Staff VALUES (109, 1000.50, 'Danny', '2022-09-15', 'Custodian');
 COMMIT;
-INSERT INTO Staff VALUES (110, 100000.80, 'Rachel', '2022-09-16');
+INSERT INTO Staff VALUES (110, 100000.80, 'Rachel', '2022-09-16', 'Custodian');
 COMMIT;
-INSERT INTO Staff VALUES (111, 100000.80, 'Baam', '2021-08-16');
+INSERT INTO Staff VALUES (111, 100000.80, 'Baam', '2021-08-16', 'Veterinarian');
 COMMIT;
-INSERT INTO Staff VALUES (112, 100000.80, 'Megumi', '2021-07-16');
+INSERT INTO Staff VALUES (112, 100000.80, 'Megumi', '2021-07-16', 'Veterinarian');
 COMMIT;
-INSERT INTO Staff VALUES (113, 100000.80, 'Oshimhen', '2021-04-16');
+INSERT INTO Staff VALUES (113, 100000.80, 'Oshimhen', '2021-04-16', 'Aquarist');
 COMMIT;
-INSERT INTO Staff VALUES (114, 1000.50, 'Messi', '2021-04-16');
+INSERT INTO Staff VALUES (114, 1000.50, 'Messi', '2021-04-16', 'Aquarist');
 COMMIT;
 
 
