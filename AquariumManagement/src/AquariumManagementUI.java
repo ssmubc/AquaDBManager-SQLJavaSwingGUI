@@ -8,8 +8,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
-import static AquariumManagement.src.AquariumManagementDB.getColumnNames;
-
 
 public class AquariumManagementUI extends JFrame {
     private static final int WIDTH = 1000;
@@ -34,12 +32,10 @@ public class AquariumManagementUI extends JFrame {
     TODO: change this to parse data read from DB instead of hard coding if time allows
      */
     private void initializeShowALlTables() {
-        showAllTablePackages.add(new TablePackage("Animal", getColumnNames("ANIMAL")));
-        showAllTablePackages.add(new TablePackage("Staff", getColumnNames("STAFF")));
-        showAllTablePackages.add(new TablePackage("Item", getColumnNames("ITEMQUANTITY")));
-        showAllTablePackages.add(new TablePackage("Vendor", getColumnNames("VENDORLOGISTICS")));
-        showAllTablePackages.add(new TablePackage("Plant", getColumnNames("GROWN_IN_PLANT")));
-        showAllTablePackages.add(new TablePackage("Tank", getColumnNames("WATERTANKLOGISTICS")));
+        showAllTablePackages.add(new TablePackage("Plant", db::listPlants));
+        showAllTablePackages.add(new TablePackage("Vendor", db::listVendors));
+        showAllTablePackages.add(new TablePackage("Inventory", db::listInventory));
+        showAllTablePackages.add(new TablePackage("Tank", db::listWaterTank));
     }
 
     private void initializeManagers() {
@@ -193,7 +189,11 @@ public class AquariumManagementUI extends JFrame {
 
             JButton button = new JButton("Show All " + tp.getName());
             button.setPreferredSize(buttonSize);
-            button.addActionListener(e -> cardLayout.show(cardsPanel, tp.getName() + "Panel"));
+            button.addActionListener(e -> {
+                tp.populateTable();
+                cardLayout.show(cardsPanel, tp.getName() + "Panel");
+            }
+            );
             buttonPanel.add(button);
         }
 

@@ -169,7 +169,7 @@ public class AquariumManagementDB {
         }
     }
 
-    public String listInventory() {
+    public JSONArray listInventory() {
         String sql = "SELECT i.ID, i.LOCATION, s.SHELF_NUMBER, s.IS_FULL " +
                 "FROM INVENTORY i " +
                 "JOIN SHELFININVENTORY s ON i.ID = s.INVENTORY_ID";
@@ -209,7 +209,7 @@ public class AquariumManagementDB {
         if (inventoryJSONArray.isEmpty()) {
             return null;
         }
-        return inventoryJSONArray.toString();
+        return inventoryJSONArray;
     }
 
     public JSONObject getInventoryByID(int itemID) {
@@ -611,7 +611,7 @@ public class AquariumManagementDB {
         }
     }
 
-    public String listWaterTank() {
+    public JSONArray listWaterTank() {
         String sql = "SELECT wl.ID, wl.WATER_TANK_LOGISTICS_NAME, wl.VOLUME, wl.TEMPERATURE, wp.PH, wl.LIGHTINGLEVEL, wl.EXHIBIT_ID, m.AQUARIST_ID " +
                 "FROM WATERTANKLOGISTICS wl " +
                 "JOIN WATERTANKPH wp ON wl.TEMPERATURE = wp.TEMPERATURE " +
@@ -661,7 +661,7 @@ public class AquariumManagementDB {
         if (waterTankArray.isEmpty()) {
             return null;
         }
-        return waterTankArray.toString();
+        return waterTankArray;
     }
 
     // COVERS ENTITIES ANIMAL, FEED, EXHIBIT AND CLEAN (NEED TO FINISH CLEAN AND FEED)
@@ -1496,7 +1496,7 @@ public class AquariumManagementDB {
         }
     }
 
-    public String listVendors() {
+    public JSONArray listVendors() {
         String sql = "SELECT vl.ID, vr.vendor_name, vr.vendor_market_rating, vl.address " +
                 "FROM VendorReputation vr " +
                 "JOIN VendorLogistics vl ON vr.vendor_name = vl.vendor_logistics_name";
@@ -1530,7 +1530,7 @@ public class AquariumManagementDB {
             return null;
         }
 
-        return vendorsArray.isEmpty() ? null : vendorsArray.toString();
+        return vendorsArray.isEmpty() ? null : vendorsArray;
     }
 
     // Source: https://github.students.cs.ubc.ca/CPSC304/CPSC304_Java_Project
