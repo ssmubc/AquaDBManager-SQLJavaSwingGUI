@@ -1,5 +1,7 @@
 package AquariumManagement.src;
 
+import org.json.JSONObject;
+
 import javax.swing.*;
 import java.awt.*;
 import java.util.ArrayList;
@@ -41,10 +43,133 @@ public class AquariumManagementUI extends JFrame {
     }
 
     private void initializeManagers() {
-        // TODO: Add DB NAME and Change inputFieldMap use DB name as key
-        String[][] inventoryFields = {{"ID", "Enter ID"},{"Location", "Enter Location"}};
+        // TODO: Add DB NAME and Change inputFieldMap use DB Field name as key
+        // each entry = {DB_FIELD_NAME, DISPLAY_NAME, PLACE_HOLDER(optional)}
+        addManageInventory();
+        addManageAnimal();
+        addManagePlant();
 
-        managerPanelPackageMap.put("Inventory",new ManagerPanelPackage("Inventory", inventoryFields));
+
+    }
+
+    private void addManageInventory() {
+        String[][] fieldNames = {{"ID","ID", "True", "Enter ID"},{"LOCATION", "Location", "False", "Enter Location"}};
+        ManagerPanelPackage InventoryManager = new ManagerPanelPackage("Inventory", fieldNames);
+        InventoryManager.getSearchButton().addActionListener(e -> {
+            int id =  Integer.parseInt(InventoryManager.getFieldText("ID"));
+            JSONObject dataFound = db.getInventoryByID(id);
+            System.out.println(db.getInventoryByID(id).toString());
+            InventoryManager.showDbData(dataFound);
+        });
+        managerPanelPackageMap.put("Inventory",InventoryManager);
+    }
+
+    // TODO: Currently No data in ANIMAL. TEST this after data is correctly inserted
+    private void addManageAnimal() {
+        String[][] fieldNames = {{"ID","ID", "True", "Enter ID"},
+                {"ANIMAL_NAME", "Name", "False","Enter Name"}, {"SPECIES", "False", "Species"}, {"AGE", "False", "Age"},
+                {"LIVINGTEMP", "Living Temperature(°C)", "False", "Enter Number"},
+                {"WATER_TANK_ID","In Water Tank(ID)", "True"}, {"VETERINARIAN_ID", "Assigned Vet(ID)", "True"}};
+        ManagerPanelPackage managerPanelPackage = new ManagerPanelPackage("Animal", fieldNames);
+        managerPanelPackage.getSearchButton().addActionListener(e -> {
+            int id =  Integer.parseInt(managerPanelPackage.getFieldText("ID"));
+            JSONObject dataFound = db.getAnimalByID(id);
+            if(dataFound != null){
+                managerPanelPackage.showDbData(dataFound);
+            } else {
+                System.out.println("Animal with ID "+ id+ "does not exist");
+            }
+
+        });
+        managerPanelPackageMap.put("Animal",managerPanelPackage);
+    }
+
+    private void addManagePlant() {
+        String[][] fieldNames = {{"Plant_ID","ID", "True", "Enter ID"}, {"Species", "Species", "True"},
+                {"Living_Temp", "Living Temperature(°C)", "True", "Enter Number"},
+                {"Water_Tank_ID","In Water Tank(ID)", "True"}, {"Living_Light", "Light Level", "True"}};
+        ManagerPanelPackage managerPanelPackage = new ManagerPanelPackage("Plant", fieldNames);
+
+        // Search
+        managerPanelPackage.getSearchButton().addActionListener(e -> {
+            if(managerPanelPackage.isFieldTextExists("Plant_ID")){
+                int id =  Integer.parseInt(managerPanelPackage.getFieldText("Plant_ID"));
+                JSONObject dataFound = db.getPlantByID(id);
+                if(dataFound != null){
+                    managerPanelPackage.showDbData(dataFound);
+                } else {
+                    JOptionPane.showMessageDialog(managerPanelPackage.getButtonPanel(),
+                            "Plant(ID: "+ id + ") does not exist\n",
+                            "Invalid Data", JOptionPane.WARNING_MESSAGE);
+                }
+            }
+        });
+
+        // Delete
+        managerPanelPackage.getDeleteButton().addActionListener(e -> {
+            if(managerPanelPackage.isFieldTextExists("Plant_ID")){
+                int id =  Integer.parseInt(managerPanelPackage.getFieldText("Plant_ID"));
+                boolean success = db.deletePlant(id);
+                if(success){
+                    JOptionPane.showMessageDialog(managerPanelPackage.getButtonPanel(),
+                            "Plant(ID: "+ id + ") was successfully deleted\n",
+                            "Invalid Data", JOptionPane.WARNING_MESSAGE);
+                } else {
+                    JOptionPane.showMessageDialog(managerPanelPackage.getButtonPanel(),
+                            "Plant(ID: "+ id + ") does not exist\n",
+                            "Invalid Data", JOptionPane.WARNING_MESSAGE);
+                }
+            }
+        });
+
+        // Add
+        managerPanelPackage.getAddButton().addActionListener(e -> {
+            if(managerPanelPackage.checkMandatoryFields()){
+                try{
+                    boolean success = db.insertPlant(Integer.parseInt(managerPanelPackage.getFieldText("Plant_ID")),
+                            managerPanelPackage.getFieldText("Species"),
+                            Float.parseFloat(managerPanelPackage.getFieldText("Living_Temp")),
+                            Float.parseFloat(managerPanelPackage.getFieldText("Living_Light")),
+                            Integer.parseInt(managerPanelPackage.getFieldText("Water_Tank_ID"))
+                    );
+                    if(success){
+                        JOptionPane.showMessageDialog(managerPanelPackage.getButtonPanel(),
+                                "Data Inserted Successfully",
+                                "Insert Data", JOptionPane.WARNING_MESSAGE);
+                    }
+
+                } catch (NumberFormatException err) {
+                    JOptionPane.showMessageDialog(managerPanelPackage.getButtonPanel(),
+                            "Please fill in the fields with valid data:\n",
+                            "Invalid Data", JOptionPane.WARNING_MESSAGE);
+                }
+            }
+        });
+
+        // Update
+        managerPanelPackage.getUpdateButton().addActionListener(e -> {
+            if(managerPanelPackage.checkMandatoryFields()){
+                try{
+                    boolean success = db.updatePlant(Integer.parseInt(managerPanelPackage.getFieldText("Plant_ID")),
+                            managerPanelPackage.getFieldText("Species"),
+                            Float.parseFloat(managerPanelPackage.getFieldText("Living_Temp")),
+                            Float.parseFloat(managerPanelPackage.getFieldText("Living_Light")),
+                            Integer.parseInt(managerPanelPackage.getFieldText("Water_Tank_ID"))
+                    );
+
+                    if(success){
+                        JOptionPane.showMessageDialog(managerPanelPackage.getButtonPanel(),
+                                "Data Updated Successfully",
+                                "Update Data", JOptionPane.WARNING_MESSAGE);
+                    }
+                } catch (NumberFormatException err) {
+                    JOptionPane.showMessageDialog(managerPanelPackage.getButtonPanel(),
+                            "Please fill in the fields with valid data:\n",
+                            "Invalid Data", JOptionPane.WARNING_MESSAGE);
+                }
+            }
+        });
+        managerPanelPackageMap.put("Plant",managerPanelPackage);
     }
 
     private void initializeComponents() {
@@ -75,8 +200,9 @@ public class AquariumManagementUI extends JFrame {
         add(cardsPanel, BorderLayout.CENTER);
 
 
-        ManagerPanelPackage inventoryPackage = managerPanelPackageMap.get("Inventory");
-        buttonPanel.add(inventoryPackage.getMainButton());
+        for(ManagerPanelPackage pPackage: managerPanelPackageMap.values()){
+            buttonPanel.add(pPackage.getMainButton());
+        }
 
 //
 //

@@ -7,14 +7,18 @@ import java.awt.event.FocusEvent;
 public class ManagerInputField {
     private JTextField textField;
     private JLabel label;
-    public ManagerInputField(String displayName){
+    private boolean mandatory; // is it mandatory when user insert data?
+    public ManagerInputField(String displayName, boolean isMandatory){
         this.label = new JLabel(displayName + " :");
         this.textField = new JTextField();
+        this.mandatory = isMandatory;
     }
 
-    public ManagerInputField(String displayName, String placeholder){
+    public ManagerInputField(String displayName, boolean isMandatory, String placeholder){
         this.label = new JLabel(displayName + " :");
-        this.textField = new JTextField(placeholder);
+        this.textField = new JTextField();
+        textField.setToolTipText(placeholder);
+        this.mandatory = isMandatory;
         textField.addFocusListener(new FocusAdapter() {
             @Override
             public void focusGained(FocusEvent e) {
@@ -38,4 +42,8 @@ public class ManagerInputField {
     public JLabel getLabel(){
         return label;
     }
+
+    public boolean isMandatory() { return mandatory;}
+
+
 }

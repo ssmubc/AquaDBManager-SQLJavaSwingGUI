@@ -212,7 +212,7 @@ public class AquariumManagementDB {
         return inventoryJSONArray.toString();
     }
 
-    public String getInventoryByID(int itemID) {
+    public JSONObject getInventoryByID(int itemID) {
         String sql = "SELECT i.ID, i.LOCATION, s.SHELF_NUMBER, s.IS_FULL " +
                 "FROM INVENTORY i " +
                 "JOIN SHELFININVENTORY s ON i.ID = s.INVENTORY_ID " +
@@ -245,7 +245,7 @@ public class AquariumManagementDB {
         if (inventoryItem.isEmpty()) {
             return null;
         }
-        return inventoryItem.toString();
+        return inventoryItem;
 
     }
     // THIS COVERS THE ENTITIES ITEM (ITEMQUANTITY AND ITEMUNIT) AND THE RELATION SUPPLY
@@ -899,7 +899,7 @@ public class AquariumManagementDB {
         return animalArray.toString();
     }
 
-    public String getAnimalByID(int id) {
+    public JSONObject getAnimalByID(int id) {
         String sql = "SELECT a.ID, a.ANIMAL_NAME, a.SPECIES, a.AGE, a.LIVINGTEMP, a.WATER_TANK_ID, a.VETERINARIAN_ID " +
                 "FROM ANIMAL a " +
                 "WHERE a.ID = ?";
@@ -943,7 +943,7 @@ public class AquariumManagementDB {
             return null;
         }
 
-        return animalItem.toString();
+        return animalItem;
     }
 
     // FOR THIS, SINCE ITS ONE EXTRA FIELD, I WILL ADD THE CUSTODIAN ID (in next commit)
@@ -1281,7 +1281,7 @@ public class AquariumManagementDB {
             return false;
         }
     }
-    public String listPlants() {
+    public JSONArray listPlants() {
         String sql = "SELECT plant_id, species, living_temp, living_light, water_tank_id FROM Grown_In_Plant";
         JSONArray plantsJSONArray = new JSONArray();
 
@@ -1316,10 +1316,10 @@ public class AquariumManagementDB {
             return null;
         }
 
-        return plantsJSONArray.isEmpty() ? null : plantsJSONArray.toString();
+        return plantsJSONArray.isEmpty() ? null : plantsJSONArray;
     }
 
-    public String getPlantByID(int plantId) {
+    public JSONObject getPlantByID(int plantId) {
         String sql = "SELECT plant_id, species, living_temp, living_light, water_tank_id FROM Grown_In_Plant WHERE plant_id = ?";
         JSONObject plantObject = new JSONObject();
 
@@ -1327,17 +1327,17 @@ public class AquariumManagementDB {
             preparedStatement.setInt(1, plantId);
             try (ResultSet resultSet = preparedStatement.executeQuery()) {
                 if (resultSet.next()) {
-                    plantObject.put("Plant ID", resultSet.getInt("plant_id"));
+                    plantObject.put("Plant_ID", resultSet.getInt("plant_id"));
                     plantObject.put("Species", resultSet.getString("species"));
-                    plantObject.put("Living Temp", resultSet.getFloat("living_temp"));
-                    plantObject.put("Living Light", resultSet.getFloat("living_light"));
-                    plantObject.put("Water Tank ID", resultSet.getInt("water_tank_id"));
+                    plantObject.put("Living_Temp", resultSet.getFloat("living_temp"));
+                    plantObject.put("Living_Light", resultSet.getFloat("living_light"));
+                    plantObject.put("Water_Tank_ID", resultSet.getInt("water_tank_id"));
 
-                    System.out.println("Plant ID: " + plantId +
+                    System.out.println("Plant_ID: " + plantId +
                             ", Species: " + plantObject.getString("Species") +
-                            ", Living Temp: " + plantObject.getFloat("Living Temp") +
-                            ", Living Light: " + plantObject.getFloat("Living Light") +
-                            ", Water Tank ID: " + plantObject.getInt("Water Tank ID"));
+                            ", Living Temp: " + plantObject.getFloat("Living_Temp") +
+                            ", Living Light: " + plantObject.getFloat("Living_Light") +
+                            ", Water Tank ID: " + plantObject.getInt("Water_Tank_ID"));
                 } else {
                     System.out.println("No plant found with ID: " + plantId);
                     return null;
@@ -1351,7 +1351,7 @@ public class AquariumManagementDB {
             return null;
         }
 
-        return plantObject.toString();
+        return plantObject;
     }
 
 
