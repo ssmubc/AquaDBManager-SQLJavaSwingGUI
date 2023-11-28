@@ -187,10 +187,17 @@ public class AquariumManagementUI extends JFrame {
         JTextField idTextField = new JTextField(20);
 
         JLabel locationLabel = new JLabel("Location:");
-        JTextField locationField = new JPasswordField(20);
+        JTextField locationField = new JTextField(20);
+
+        JLabel shelfNumberLabel = new JLabel("Shelf Number:");
+        JTextField shelfNumberField = new JTextField(20);
+
+        JLabel IsFullLabel = new JLabel("Is Full:");
+        JTextField isFullField = new JTextField(20);
+
         // Connect Oracle button
         JButton addButton = new JButton("Add to Oracle DB");
-        addButton.addActionListener(e -> addInventoryPanel(DBframe, idTextField, locationField));
+        addButton.addActionListener(e -> addInventoryPanel(DBframe, idTextField, locationField, shelfNumberField, isFullField));
 
         DBpanel.add(idLabel);
         DBpanel.add(idTextField);
@@ -201,13 +208,16 @@ public class AquariumManagementUI extends JFrame {
         DBframe.setVisible(true);
     }
 
-    private void addInventoryPanel(JFrame DBFrame, JTextField idTextField, JTextField locationField) {
+    private void addInventoryPanel(JFrame DBFrame, JTextField idTextField, JTextField locationField,
+                                   JTextField shelfNumberField, JTextField isFullField) {
         // calls method from AquariumManagementDB()
         // converts fields to strings
-        Integer id = Integer.parseInt(idTextField.getText());
+        int id = Integer.parseInt(idTextField.getText());
         String location = locationField.getText();
+        int shelf_number  = Integer.parseInt(shelfNumberField.getText());
+        String isFull = isFullField.getText();
 
-        boolean status = db.insertInventory(id, location);
+        boolean status = db.insertInventory(id, location, shelf_number, isFull);
         if (status) {
             JOptionPane.showMessageDialog(DBFrame, "Entry has been added successfully");
         } else {
@@ -247,19 +257,22 @@ public class AquariumManagementUI extends JFrame {
         }
     };
 
-    private void InventoryHelper(JFrame DBFrame, JTextField idTextField, JTextField locationField, String operation) {
+    private void InventoryHelper(JFrame DBFrame, JTextField idTextField, JTextField locationField,
+                                 JTextField shelfNumberField, JTextField isFullField, String operation) {
         // calls method from AquariumManagementDB()
         // converts fields to strings
         int id = Integer.parseInt(idTextField.getText());
         String location = locationField.getText();
+        int shelf_number  = Integer.parseInt(shelfNumberField.getText());
+        String isFull = isFullField.getText();
         boolean success = false;
 
         if (operation == "ADDITION") {
-            success = db.insertInventory(id, location);
+            success = db.insertInventory(id, location, shelf_number, isFull);
         } else if (operation == "UPDATE") {
-            success = db.updateInventory(id, location);
+            success = db.updateInventory(id, location, shelf_number, isFull);
         } else if (operation == "DELETE") {
-            success = db.deleteInventory(id);
+            success = db.deleteInventory(id, shelf_number);
         }
 
         if (success) {
@@ -325,6 +338,7 @@ public class AquariumManagementUI extends JFrame {
             JOptionPane.showMessageDialog(DBFrame, "Operation on ANIMAL encountered an error");
         }
     }
+    /*
 
     private void ItemHelper(JFrame DBFrame, JTextField idTextField, JTextField nameField, JTextField quantityField, JTextField unitField, String operation) {
         // calls method from AquariumManagementDB()
@@ -379,6 +393,7 @@ public class AquariumManagementUI extends JFrame {
             JOptionPane.showMessageDialog(DBFrame, "Operation on WATERTANK encountered an error");
         }
     }
+    */
 
 
 }
