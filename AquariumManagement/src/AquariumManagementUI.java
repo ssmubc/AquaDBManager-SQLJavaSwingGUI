@@ -19,11 +19,11 @@ public class AquariumManagementUI extends JFrame {
     // declaring the database
     private AquariumManagementDB db;
 
-    private List<TablePackage> showAllTablePackages;
+    private List<TablePackage> tablePackages;
     private HashMap<String, ManagerPanelPackage> managerPanelPackageMap;
     public AquariumManagementUI() {
         super("Aquarium Manager");
-        showAllTablePackages = new ArrayList<TablePackage>();
+        tablePackages = new ArrayList<TablePackage>();
         managerPanelPackageMap = new HashMap<String, ManagerPanelPackage>();
         connectDBPanel(); // connect DB and launch app
     }
@@ -31,12 +31,14 @@ public class AquariumManagementUI extends JFrame {
     /*
     TODO: change this to parse data read from DB instead of hard coding if time allows
      */
-    private void initializeShowALlTables() {
-        showAllTablePackages.add(new TablePackage("Plant", db::listPlants));
-        showAllTablePackages.add(new TablePackage("Vendor", db::listVendors));
-        showAllTablePackages.add(new TablePackage("Inventory", db::listInventory));
-        showAllTablePackages.add(new TablePackage("Tank", db::listWaterTank));
-        showAllTablePackages.add(new TablePackage("Animal", db::listAnimal));
+    private void initializeTablePackages() {
+        tablePackages.add(new TablePackage(cardLayout,"Plant", db::listPlants));
+        tablePackages.add(new TablePackage(cardLayout,"Vendor", db::listVendors));
+        tablePackages.add(new TablePackage(cardLayout,"Inventory", db::listInventory));
+        tablePackages.add(new TablePackage(cardLayout,"Animal", db::listAnimal));
+        TablePackage tankTablePkg = new TablePackage(cardLayout,"Tank", db::listWaterTank);
+        tablePackages.add(tankTablePkg);
+
     }
 
     private void initializeManagers() {
@@ -243,11 +245,9 @@ public class AquariumManagementUI extends JFrame {
         homePanel.add(buttonPanel, BorderLayout.CENTER);
 
         // Add show all list
-        for (TablePackage tp : showAllTablePackages) {
-            JPanel categoryPanel = createListAllPanel(tp);
-            cardsPanel.add(categoryPanel, tp.getName() + "Panel");
-
-            JButton button = new JButton("Show All " + tp.getName());
+        for (TablePackage tp : tablePackages) {
+            cardsPanel.add(tp.getPackagePanel(), tp.getName() + "Panel");
+            JButton button = new JButton("Show " + tp.getName() +" List");
             button.setPreferredSize(buttonSize);
             button.addActionListener(e -> {
                 tp.populateTable();
@@ -286,21 +286,6 @@ public class AquariumManagementUI extends JFrame {
         return homePanel;
     }
 
-    private JPanel createListAllPanel(TablePackage tablePackage) {
-        JPanel categoryPanel = new JPanel(new BorderLayout());
-        categoryPanel.add(new JScrollPane(tablePackage.getTable()), BorderLayout.CENTER);
-
-        // Button Panel
-        JPanel buttonPanel = new JPanel();
-        JButton backButton = new JButton("Back to Home");
-
-        backButton.addActionListener(e -> cardLayout.show(cardsPanel, "HomePanel"));
-        buttonPanel.add(backButton);
-
-        categoryPanel.add(buttonPanel, BorderLayout.SOUTH);
-
-        return categoryPanel;
-    }
 
     private void connectDBPanel() {
         JFrame DBframe = new JFrame("Oracle DB Connection");
@@ -341,7 +326,7 @@ public class AquariumManagementUI extends JFrame {
         if (status) {
             JOptionPane.showMessageDialog(DBframe, "Connected to Oracle DB successfully!");
             DBframe.dispose();
-            initializeShowALlTables();
+            initializeTablePackages();
             initializeManagers();
             initializeComponents();
         } else {
