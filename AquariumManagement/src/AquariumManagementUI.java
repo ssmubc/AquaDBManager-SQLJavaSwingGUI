@@ -45,6 +45,7 @@ public class AquariumManagementUI extends JFrame {
         addManageInventory();
         addManageAnimal();
         addManagePlant();
+        addManageWaterTank();
 
 
     }
@@ -61,7 +62,6 @@ public class AquariumManagementUI extends JFrame {
         managerPanelPackageMap.put("Inventory",InventoryManager);
     }
 
-    // TODO: Currently No data in ANIMAL. TEST this after data is correctly inserted
     private void addManageAnimal() {
         String[][] fieldNames = {{"ID","ID", "True", "Enter ID"},
                 {"ANIMAL_NAME", "Name", "False","Enter Name"}, {"SPECIES", "Species","False"}, {"AGE", "Age", "False"},
@@ -168,7 +168,66 @@ public class AquariumManagementUI extends JFrame {
         managerPanelPackageMap.put("Plant",panelPkg);
     }
 
+    // TODO: Currently no supporting data available. test this when data is ready
+    private void addManageWaterTank() {
+        String[][] fieldNames = {{"ID","ID", "True", "Enter ID"},
+                {"WATER_TANK_LOGISTICS_NAME", "Name", "True","Enter Name"},
+                {"VOLUME", "Volume(l)","True"}, {"TEMPERATURE", "Temperature(°C)", "True"},
+                {"LIGHTINGLEVEL", "Lighting Level", "True", "Enter Number"},
+                {"EXHIBIT_ID","In Exhibit(ID)", "True"},
+                {"PH","Ph", "True"}, {"AQUARIST_ID","Aquarist Assigned(ID)", "True"}};
+        ManagerPanelPackage panelPkg = new ManagerPanelPackage("WaterTank", fieldNames);
+        //Search
+        panelPkg.addSearchAction("ID", db::getWaterTankByID);
+        //Delete
+        panelPkg.addDeleteAction("ID", db::deleteWaterTank);
+        //Add
+        panelPkg.getAddButton().addActionListener(e -> {
+            if(panelPkg.checkMandatoryFields()){
+                try{
+                    int id = Integer.parseInt(panelPkg.getFieldText("ID"));
+                    boolean success = db.insertWaterTank(id,
+                            panelPkg.getFieldText("WATER_TANK_LOGISTICS_NAME"),
+                            panelPkg.getFieldAsFloat("VOLUME"),
+                            panelPkg.getFieldAsFloat("TEMPERATURE"),
+                            panelPkg.getFieldText("LIGHTINGLEVEL"),
+                            panelPkg.getFieldAsInt("EXHIBIT_ID"),
+                            panelPkg.getFieldAsFloat("PH"),
+                            panelPkg.getFieldAsInt("AQUARIST_ID")
+                    );
+                    if(success){
+                        panelPkg.insertSuccessPopup(id);
+                    }
+                } catch (NumberFormatException err) {
+                    panelPkg.invalidDataPopup();
+                }
+            }
+        });
+        // Update
+        panelPkg.getUpdateButton().addActionListener(e -> {
+            if(panelPkg.checkMandatoryFields()){
+                try{
+                    int id = Integer.parseInt(panelPkg.getFieldText("ID"));
+                    boolean success = db.updateWaterTank(id,
+                            panelPkg.getFieldText("WATER_TANK_LOGISTICS_NAME"),
+                            panelPkg.getFieldAsFloat("VOLUME"),
+                            panelPkg.getFieldAsFloat("TEMPERATURE"),
+                            panelPkg.getFieldText("LIGHTINGLEVEL"),
+                            panelPkg.getFieldAsInt("EXHIBIT_ID"),
+                            panelPkg.getFieldAsFloat("PH"),
+                            panelPkg.getFieldAsInt("AQUARIST_ID")
+                    );
+                    if(success){
+                        panelPkg.updateSuccessPopup(id);
+                    }
+                } catch (NumberFormatException err) {
+                    panelPkg.invalidDataPopup();
+                }
+            }
+        });
 
+        managerPanelPackageMap.put("WaterTank",panelPkg);
+    }
     private void initializeComponents() {
         setDefaultCloseOperation(EXIT_ON_CLOSE);
         setPreferredSize(new Dimension(WIDTH, HEIGHT));
