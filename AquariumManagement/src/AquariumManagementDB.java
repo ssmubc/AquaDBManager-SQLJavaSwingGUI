@@ -52,6 +52,54 @@ public class AquariumManagementDB {
             return false;
         }
     }
+
+    // retrieves data from any entity
+    public JSONArray getRawData(JSONObject relationObj) {
+        JSONArray dataArray = new JSONArray();
+
+        String tableName = relationObj.getString("tableName");
+        JSONArray fieldsArray = relationObj.getJSONArray("Fields");
+
+        // DEFAULT: select all attributes
+        String selectedFields = "*";
+        if (fieldsArray != null && !fieldsArray.isEmpty()) {
+            selectedFields = String.join(", ", fieldsArray.toString());
+        }
+
+        String sql = "SELECT " + selectedFields +
+                " FROM " + tableName;
+
+        try {
+
+            PreparedStatement preparedStatement = connection.prepareStatement(sql);
+
+            ResultSet resultSet = preparedStatement.executeQuery();
+
+            while (resultSet.next()) {
+                JSONObject tuple = new JSONObject();
+
+                // retrieve fields and put it into the JSONObject
+                // Source: https://docs.oracle.com/javase/8/docs/api/java/sql/ResultSet.html
+                for (int i = 1; i <= resultSet.getMetaData().getColumnCount(); i++) {
+                    String fieldName = resultSet.getMetaData().getColumnName(i);
+                    tuple.put(fieldName, resultSet.getObject(i));
+                }
+
+                dataArray.put(tuple);
+            }
+
+            resultSet.close();
+            preparedStatement.close();
+
+            System.out.println("Data was retrieved successfully");
+
+        } catch (SQLException e) {
+            System.out.println("Data failed while retrieving");
+        }
+
+        return dataArray;
+    }
+
     // In this relation, I am accounting for the entities: INVENTORY and SHELF
     public boolean insertInventory(int id, String location, int shelfNumber, String isFull) {
         String sql = "INSERT INTO INVENTORY (ID, LOCATION) VALUES (?, ?)";
@@ -137,27 +185,20 @@ public class AquariumManagementDB {
         }
     }
 
+    // REMOVE SHELF_ON_INVENTORY SINCE ORACLE SUPPORTS ON DELETE CASCADE
     public boolean deleteInventory(int id, int shelfNumber) {
         String sql = "DELETE FROM INVENTORY WHERE ID = ?";
-        String sql2 = "DELETE FROM SHELFININVENTORY WHERE INVENTORY_ID = ? AND SHELF_NUMBER = ?";
 
         try {
             PreparedStatement preparedStatement = connection.prepareStatement(sql);
-            PreparedStatement preparedStatement2 = connection.prepareStatement(sql2);
 
             preparedStatement.setInt(1, id);
 
-
-            preparedStatement2.setInt(1, id);
-            preparedStatement2.setInt(2, shelfNumber);
-
             preparedStatement.executeUpdate();
-            preparedStatement2.executeUpdate();
 
             connection.commit();
 
             preparedStatement.close();
-            preparedStatement2.close();
 
             System.out.println("Data from INVENTORY deleted successfully.");
             return true;
@@ -170,9 +211,11 @@ public class AquariumManagementDB {
     }
 
     public JSONArray listInventory() {
+
         String sql = "SELECT i.ID, i.LOCATION, s.SHELF_NUMBER, s.IS_FULL " +
                 "FROM INVENTORY i " +
                 "JOIN SHELFININVENTORY s ON i.ID = s.INVENTORY_ID";
+
         JSONArray inventoryJSONArray = new JSONArray();
 
         try {
@@ -293,10 +336,10 @@ public class AquariumManagementDB {
         }
     }
 
+    // REMOVE DELETESUPPLY SINCE ORACLE SUPPORTS ON DELETE CASCADE
     public boolean deleteItem(int id, int vendorID) {
         String getItemNameSql = "SELECT NAME FROM ITEMQUANTITY WHERE ID = ?";
         String deleteItemQuantitySql = "DELETE FROM ITEMQUANTITY WHERE ID = ?";
-        String deleteSupplySql = "DELETE FROM SUPPLY WHERE ITEMID = ? AND VENDORID = ?";
         String deleteItemUnitSql = "DELETE FROM ITEMUNIT WHERE NAME = ?";
 
         try (PreparedStatement getItemNameStatement = connection.prepareStatement(getItemNameSql)) {
@@ -309,21 +352,16 @@ public class AquariumManagementDB {
                     itemName = resultSet.getString("NAME");
 
                     try (PreparedStatement deleteQuantityStatement = connection.prepareStatement(deleteItemQuantitySql);
-                         PreparedStatement deleteUnitStatement = connection.prepareStatement(deleteItemUnitSql);
-                         PreparedStatement deleteSupplyStatement = connection.prepareStatement(deleteSupplySql)) {
+                         PreparedStatement deleteUnitStatement = connection.prepareStatement(deleteItemUnitSql)) {
 
                         // Delete from ITEMQUANTITY
                         deleteQuantityStatement.setInt(1, id);
-                        deleteQuantityStatement.executeUpdate();
 
                         // Delete from ITEMUNIT
                         deleteUnitStatement.setString(1, itemName);
-                        deleteUnitStatement.executeUpdate();
 
-                        // DELETE FROM SUPPLY
-                        deleteSupplyStatement.setInt(1, id);
-                        deleteSupplyStatement.setInt(2, vendorID);
-                        deleteSupplyStatement.executeUpdate();
+                        deleteQuantityStatement.executeUpdate();
+                        deleteUnitStatement.executeUpdate();
                     }
 
                     System.out.println("Data from ITEM and SUPPLY was deleted properly");
@@ -457,6 +495,7 @@ public class AquariumManagementDB {
         }
     }
 
+    // DONT REALLY NEED THIS SINCE DELETING tuple in ITEM will delete all foreign id references
     public boolean deleteFood(int id) {
         String sql = "DELETE FROM FOOD WHERE ITEM_ID = ?";
 
@@ -523,13 +562,13 @@ public class AquariumManagementDB {
                 String food_type = resultSet.getString("FOOD_TYPE");
 
                 JSONObject food = new JSONObject();
-                food.put("FOOD_ID", food_id);
+                food.put("ITEM_ID", food_id);
                 food.put("EXP_DATE", exp_date);
                 food.put("FOOD_TYPE", food_type);
 
                 foodJSONArray.put(food);
 
-                System.out.println("FOOD_ID: " + food_id + ", EXP_DATE: " + exp_date + ", FOOD_TYPE: " + food_type);
+                System.out.println("ITEM_ID: " + food_id + ", EXP_DATE: " + exp_date + ", FOOD_TYPE: " + food_type);
 
             }
 
@@ -564,7 +603,7 @@ public class AquariumManagementDB {
                 String exp_date = resultSet.getString("EXP_DATE");
                 String food_type = resultSet.getString("FOOD_TYPE");
 
-                food.put("FOOD_ID", food_id);
+                food.put("ITEM_ID", food_id);
                 food.put("EXP_DATE", exp_date);
                 food.put("FOOD_TYPE", food_type);
 
@@ -614,25 +653,21 @@ public class AquariumManagementDB {
         }
     }
 
-    // HANDLES DELETE IN EQUIPMENT AND INSTALLED
+    // HANDLES DELETE IN EQUIPMENT
+    // REMOVES INSTALLED SINCE ORACLE HAS ON DELETE CASCADE
     public boolean deleteEquipment(int id) {
         String sql = "DELETE FROM equipment WHERE ITEM_ID = ?";
-        String sql2 = "DELETE FROM INSTALLED WHERE EQUIPMENT_ID = ?";
 
         try {
             PreparedStatement preparedStatement = connection.prepareStatement(sql);
-            PreparedStatement preparedStatement1 = connection.prepareStatement(sql2);
 
             preparedStatement.setInt(1, id);
-            preparedStatement1.setInt(1, id);
 
             preparedStatement.executeUpdate();
-            preparedStatement1.execute();
 
             connection.commit();
 
             preparedStatement.close();
-            preparedStatement1.close();
 
             System.out.println("Data from EQUIPMENT deleted successfully.");
             return true;
@@ -690,7 +725,7 @@ public class AquariumManagementDB {
                 String date_installed = resultSet.getString("DATE_INSTALLED");
 
                 JSONObject equipment = new JSONObject();
-                equipment.put("ID", equipment_id);
+                equipment.put("ITEM_ID", equipment_id);
                 equipment.put("EQUIPMENT_FUNCTION", function);
                 equipment.put("WEIGHT", weight);
                 equipment.put("EQUIPMENT_SIZE", size);
@@ -735,7 +770,7 @@ public class AquariumManagementDB {
                 String size = resultSet.getString("EQUIPMENT_SIZE");
                 String date_installed = resultSet.getString("DATE_INSTALLED");
 
-                equipment.put("ID", equipment_id);
+                equipment.put("ITEM_ID", equipment_id);
                 equipment.put("EQUIPMENT_FUNCTION", function);
                 equipment.put("WEIGHT", weight);
                 equipment.put("EQUIPMENT_SIZE", size);
@@ -759,27 +794,6 @@ public class AquariumManagementDB {
             return null;
         }
         return equipment;
-    }
-
-
-    private static void ItemHelper(int id, String name, int quantity, String unit, String sql1, String sql2) throws SQLException {
-        PreparedStatement preparedStatement1 = connection.prepareStatement(sql1);
-        PreparedStatement preparedStatement2 = connection.prepareStatement(sql2);
-
-        // query argument setting for statement 1
-        preparedStatement1.setInt(1, id);
-        preparedStatement1.setString(2, name);
-        preparedStatement1.setInt(3, quantity);
-
-        // query argument setting for statement 2
-        preparedStatement2.setString(1, name);
-        preparedStatement2.setString(2, unit);
-
-        preparedStatement1.executeUpdate();
-        preparedStatement2.executeUpdate();
-
-        preparedStatement1.close();
-        preparedStatement2.close();
     }
 
     // THIS COVERS THE ENTITIES WATERTANK (WATERTANKLOGISTICS AND WATERTANKPH) AND RELATION MAINTAINS (SEPARATE ENTITY) AND PARTOF
@@ -832,8 +846,6 @@ public class AquariumManagementDB {
         String getWaterTankTempSql = "SELECT TEMPERATURE FROM WATERTANKLOGISTICS WHERE ID = ?";
         String deleteWaterTankLogisticsSql = "DELETE FROM WATERTANKLOGISTICS WHERE ID = ?";
         String deleteWaterTankpHSql = "DELETE FROM WATERTANKPH WHERE TEMPERATURE = ?";
-        String maintainWaterTankSql = "DELETE FROM AQUARIST_MAINTAIN_WATERTANK WHERE WATER_TANK_ID = ?";
-        String installedSql = "DELETE FROM INSTALLED WHERE WATER_TANK_ID = ?";
 
         try (PreparedStatement getWaterTankTempStatement = connection.prepareStatement(getWaterTankTempSql)) {
             getWaterTankTempStatement.setInt(1, id);
@@ -845,19 +857,13 @@ public class AquariumManagementDB {
                     waterTankTemperature = resultSet.getFloat("TEMPERATURE");
 
                     try (PreparedStatement deleteQuantityStatement = connection.prepareStatement(deleteWaterTankLogisticsSql);
-                         PreparedStatement deleteUnitStatement = connection.prepareStatement(deleteWaterTankpHSql);
-                         PreparedStatement deleteMaintainStatement = connection.prepareStatement(maintainWaterTankSql);
-                         PreparedStatement installedStatement = connection.prepareStatement(installedSql)) {
+                         PreparedStatement deleteUnitStatement = connection.prepareStatement(deleteWaterTankpHSql)) {
 
                         deleteQuantityStatement.setInt(1, id);
                         deleteUnitStatement.setFloat(1, waterTankTemperature);
-                        deleteMaintainStatement.setInt(1, id);
-                        installedStatement.setInt(1, id);
 
                         deleteQuantityStatement.executeUpdate();
                         deleteUnitStatement.executeUpdate();
-                        deleteMaintainStatement.executeUpdate();
-                        installedStatement.executeUpdate();
                     }
 
                     System.out.println("Data from WATERTANK was deleted properly");
@@ -969,10 +975,10 @@ public class AquariumManagementDB {
 
                 JSONObject waterTank = new JSONObject();
                 waterTank.put("ID", id);
-                waterTank.put("NAME", name);
+                waterTank.put("WATER_TANK_LOGISTICS_NAME", name);
                 waterTank.put("TEMPERATURE", temperature);
                 waterTank.put("PH", pH);
-                waterTank.put("LIGHTING_LEVEL", lighting_level);
+                waterTank.put("LIGHTINGLEVEL", lighting_level);
                 waterTank.put("EXHIBIT_ID", exhibit_id);
                 waterTank.put("AQUARIST_ID", aquarist_id);
 
@@ -1023,11 +1029,11 @@ public class AquariumManagementDB {
                 int aquarist_id = resultSet.getInt("AQUARIST_ID");
 
                 waterTank.put("ID", animal_id);
-                waterTank.put("NAME", name);
+                waterTank.put("WATER_TANK_LOGISTICS_NAME", name);
                 waterTank.put("VOLUME", volume);
                 waterTank.put("TEMPERATURE", temperature);
                 waterTank.put("PH", pH);
-                waterTank.put("LIGHTING_LEVEL", lighting_level);
+                waterTank.put("LIGHTINGLEVEL", lighting_level);
                 waterTank.put("EXHIBIT_ID", exhibit_id);
                 waterTank.put("AQUARIST_ID", aquarist_id);
 
@@ -1049,6 +1055,128 @@ public class AquariumManagementDB {
             return null;
         }
         return waterTank;
+    }
+
+    // SELECT METHOD
+    public JSONArray selectWaterTank(JSONObject waterTankConditions) {
+        // construct SELECT query
+        StringBuilder sql = new StringBuilder("SELECT wl.ID, wl.WATER_TANK_LOGISTICS_NAME, wl.VOLUME, wl.TEMPERATURE, wp.PH, wl.LIGHTINGLEVEL, wl.EXHIBIT_ID, m.AQUARIST_ID " +
+                "FROM WATERTANKLOGISTICS wl " +
+                "JOIN WATERTANKPH wp ON wl.TEMPERATURE = wp.TEMPERATURE");
+
+        // Check if conditions are provided
+        if (waterTankConditions != null && waterTankConditions.has("Selection")) {
+            JSONArray selectionArray = waterTankConditions.getJSONArray("Selection");
+
+            // create an array for AND conditions and OR conditions
+            JSONArray andCondArray = new JSONArray();
+            JSONArray orCondArray = new JSONArray();
+
+            for (int i = 0; i < selectionArray.length(); i++) {
+                JSONObject condition = selectionArray.getJSONObject(i);
+                if ("And".equalsIgnoreCase(condition.getString("Condition"))) {
+                    andCondArray.put(condition);
+                } else if ("Or".equalsIgnoreCase(condition.getString("Condition"))) {
+                    orCondArray.put(condition);
+                }
+            }
+
+            // Add AND conditions
+            if (!andCondArray.isEmpty()) {
+                sql.append(" WHERE (");
+                for (int i = 0; i < andCondArray.length(); i++) {
+                    JSONObject cond = andCondArray.getJSONObject(i);
+                    if (i > 0) {
+                        sql.append(" AND ");
+                    }
+                    sql.append("(")
+                            .append(cond.getString("Field"))
+                            .append(" ")
+                            .append(cond.getString("Comparison"))
+                            .append(" ?)");
+                }
+                sql.append(")");
+            }
+
+            // Add OR conditions
+            if (!orCondArray.isEmpty()) {
+                if (!andCondArray.isEmpty()) {
+                    sql.append(" AND ");
+                } else {
+                    sql.append(" WHERE ");
+                }
+                sql.append("(");
+                for (int i = 0; i < orCondArray.length(); i++) {
+                    JSONObject cond = orCondArray.getJSONObject(i);
+                    if (i > 0) {
+                        sql.append(" OR ");
+                    }
+                    sql.append("(")
+                            .append(cond.getString("Field"))
+                            .append(" ")
+                            .append(cond.getString("Comparison"))
+                            .append(" ?)");
+                }
+                sql.append(")");
+            }
+        }
+
+        JSONArray waterTankArray = new JSONArray();
+
+        try (PreparedStatement statement = connection.prepareStatement(sql.toString())) {
+            // Set parameter values based on the JSONObject
+            if (waterTankConditions != null && waterTankConditions.has("Selection")) {
+                JSONArray selectionArray = waterTankConditions.getJSONArray("Selection");
+                int parameterIndex = 1;
+                for (int i = 0; i < selectionArray.length(); i++) {
+                    JSONObject condition = selectionArray.getJSONObject(i);
+                    statement.setObject(parameterIndex, condition.getString("Value"));
+                    parameterIndex += 1;
+                }
+            }
+
+            ResultSet resultSet = statement.executeQuery();
+
+            while (resultSet.next()) {
+                int water_tank_id = resultSet.getInt("ID");
+                String name = resultSet.getString("WATER_TANK_LOGISTICS_NAME");
+                float volume = resultSet.getFloat("VOLUME");
+                float temperature = resultSet.getFloat("TEMPERATURE");
+                float pH = resultSet.getFloat("PH");
+                String lighting_level = resultSet.getString("LIGHTINGLEVEL");
+                int exhibit_id = resultSet.getInt("EXHIBIT_ID");
+                int aquarist_id = resultSet.getInt("AQUARIST_ID");
+
+                JSONObject waterTank = new JSONObject();
+
+                waterTank.put("ID", water_tank_id);
+                waterTank.put("WATER_TANK_LOGISTICS_NAME", name);
+                waterTank.put("VOLUME", volume);
+                waterTank.put("TEMPERATURE", temperature);
+                waterTank.put("PH", pH);
+                waterTank.put("LIGHTINGLEVEL", lighting_level);
+                waterTank.put("EXHIBIT_ID", exhibit_id);
+                waterTank.put("AQUARIST_ID", aquarist_id);
+
+                waterTankArray.put(waterTank);
+
+                System.out.println("ID: " + water_tank_id + ", NAME: " + name + ", VOLUME: " + volume + ", TEMPERATURE: " + temperature +
+                        ", PH: " + pH + ", LIGHTINGLEVEL: " + lighting_level + ", EXHIBIT_ID: " + exhibit_id
+                        + " , AQUARIST_ID: " + aquarist_id);
+                }
+
+                resultSet.close();
+
+                System.out.println("Data from WATERTANK was listed successfully");
+
+            } catch (SQLException e) {
+                System.out.println("Data from WATERTANK was not listed properly");
+            }
+
+            if (waterTankArray.isEmpty()) {
+                return null;
+            }
+            return waterTankArray;
     }
 
     // COVERS ENTITIES ANIMAL, FEED, EXHIBIT AND CLEAN (NEED TO FINISH CLEAN AND FEED)
@@ -1129,11 +1257,11 @@ public class AquariumManagementDB {
 
             preparedStatement.close();
 
-            System.out.println("Data in ANIMAL inserted successfully.");
+            System.out.println("Data in EXHIBIT inserted successfully.");
             return true;
 
         } catch (SQLException e) {
-            System.out.println("Data in ANIMAL was not inserted properly");
+            System.out.println("Data in EXHIBIT was not inserted properly");
             rollbackConnection();
             return false;
         }
@@ -1199,6 +1327,10 @@ public class AquariumManagementDB {
         }
     }
 
+    public JSONArray GroupByAnimal() {
+        return null;
+    }
+
     public boolean updateExhibit(int id, String name, String status) {
         String sql = "UPDATE EXHIBIT SET EXHIBIT_STATUS = ?, EXHIBIT_STATUS = ? WHERE ID = ?";
 
@@ -1228,6 +1360,7 @@ public class AquariumManagementDB {
 
     // DISCUSS HOW TO ADD THIS (WITH SHARON AND CHRIS) - MAKE SEPARATE METHOD OR DO IT WITHIN ENTITIES
     // MAKES MORE SENSE TO DO IT WITHIN ENTITIES
+    // NOT NEEDED REALLY
     public boolean deleteFeed(int food_id, int animal_id, int aquarist_id) {
         return false;
     }
@@ -1235,22 +1368,17 @@ public class AquariumManagementDB {
     // DELETES FROM ANIMAL AND FEED (SINCE ANIMAL HAS TOTAL PARTICIPATION - DISCUSS)
     public boolean deleteAnimal(int id) {
         String sql = "DELETE FROM ANIMAL WHERE ID = ?";
-        String sql2 = "DELETE FROM FEED WHERE ANIMAL_ID = ?";
 
         try {
             PreparedStatement preparedStatement = connection.prepareStatement(sql);
-            PreparedStatement preparedStatement2 = connection.prepareStatement(sql2);
 
             preparedStatement.setInt(1, id);
-            preparedStatement2.setInt(1, id);
 
             preparedStatement.executeUpdate();
-            preparedStatement2.executeUpdate();
 
             connection.commit();
 
             preparedStatement.close();
-            preparedStatement2.close();
 
             System.out.println("Data deleted successfully.");
             return true;
@@ -1265,22 +1393,17 @@ public class AquariumManagementDB {
     // DELETES FROM EXHIBIT AND CLEAN
     public boolean deleteExhibit(int id) {
         String sql = "DELETE FROM EXHIBIT WHERE ID = ?";
-        String sql2 = "DELETE FROM CUSTODIAN_CLEAN_EXHIBIT_TABLE WHERE EXHIBIT_ID = ?";
 
         try {
             PreparedStatement preparedStatement = connection.prepareStatement(sql);
-            PreparedStatement preparedStatement2 = connection.prepareStatement(sql2);
 
             preparedStatement.setInt(1, id);
-            preparedStatement2.setInt(1, id);
 
             preparedStatement.executeUpdate();
-            preparedStatement2.executeUpdate();
 
             connection.commit();
 
             preparedStatement.close();
-            preparedStatement2.close();
 
             System.out.println("Data deleted successfully.");
             return true;
@@ -1330,10 +1453,10 @@ public class AquariumManagementDB {
 
             animalResult.close();
 
-            System.out.println("Data from EXHIBIT was listed successfully");
+            System.out.println("Data from ANIMAL was listed successfully");
 
         } catch (SQLException e) {
-            System.out.println("Data from EXHIBIT was not listed properly");
+            System.out.println("Data from ANIMAL was not listed properly");
         }
 
         if (animalArray.isEmpty()) {
@@ -1366,10 +1489,10 @@ public class AquariumManagementDB {
 
                 JSONObject animal = new JSONObject();
                 animal.put("ID", animal_id);
-                animal.put("NAME", name);
+                animal.put("ANIMAL_NAME", name);
                 animal.put("SPECIES", species);
                 animal.put("AGE", age);
-                animal.put("LIVING_TEMP", living_temp);
+                animal.put("LIVINGTEMP", living_temp);
                 animal.put("WATER_TANK_ID", waterTankID);
                 animal.put("VETERINARIAN_ID", veterinarianID);
 

@@ -412,6 +412,9 @@ public class AquariumManagementUI extends JFrame {
         return null;
     }
 
+
+    /*
+
     private void ExhibitHelper(JFrame DBFrame, JTextField idTextField, JTextField nameField, JTextField statusField, String operation) {
         // calls method from AquariumManagementDB()
         // converts fields to strings
@@ -435,8 +438,6 @@ public class AquariumManagementUI extends JFrame {
             JOptionPane.showMessageDialog(DBFrame, "Operation on EXHIBIT encountered an error");
         }
     }
-
-    /*
 
     private void AnimalHelper(JFrame DBFrame, JTextField idTextField, JTextField nameField, JTextField speciesField,
                               JTextField ageField, JTextField livingTempField, JTextField waterTankIDField, JTextField veterinarianIDField, String operation) {
