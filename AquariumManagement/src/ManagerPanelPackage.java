@@ -196,6 +196,14 @@ public class ManagerPanelPackage {
         });
     }
 
+    public float getFieldAsFloat(String fieldName) throws NumberFormatException {
+        return Float.parseFloat(getFieldText(fieldName));
+    }
+
+    public int getFieldAsInt(String fieldName) throws NumberFormatException {
+        return Integer.parseInt(getFieldText(fieldName));
+    }
+
     public void showDbData(JSONObject dbData) {
         for(String key: dbData.keySet()){
             setFieldText(key, dbData.get(key).toString());

@@ -1364,14 +1364,14 @@ public class AquariumManagementDB {
                 int waterTankID = animalResult.getInt("WATER_TANK_ID");
                 int veterinarianID = animalResult.getInt("VETERINARIAN_ID");
 
-                JSONObject animal = new JSONObject();
-                animal.put("ID", animal_id);
-                animal.put("NAME", name);
-                animal.put("SPECIES", species);
-                animal.put("AGE", age);
-                animal.put("LIVING_TEMP", living_temp);
-                animal.put("WATER_TANK_ID", waterTankID);
-                animal.put("VETERINARIAN_ID", veterinarianID);
+
+                animalItem.put("ID", animal_id);
+                animalItem.put("ANIMAL_NAME", name);
+                animalItem.put("SPECIES", species);
+                animalItem.put("AGE", age);
+                animalItem.put("LIVINGTEMP", living_temp);
+                animalItem.put("WATER_TANK_ID", waterTankID);
+                animalItem.put("VETERINARIAN_ID", veterinarianID);
 
                 System.out.println("ID: " + id + ", Name: " + name + ", Species: " + species + ", Age: " + age + ", Living Temperature: " + living_temp
                         + ", Water Tank ID: " + waterTankID + ", Veterinarian ID: " + veterinarianID);

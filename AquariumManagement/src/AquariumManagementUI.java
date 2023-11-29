@@ -69,15 +69,52 @@ public class AquariumManagementUI extends JFrame {
                 {"WATER_TANK_ID","In Water Tank(ID)", "True"}, {"VETERINARIAN_ID", "Assigned Vet(ID)", "True"}};
         ManagerPanelPackage panelPkg = new ManagerPanelPackage("Animal", fieldNames);
         //Search
-        panelPkg.getSearchButton().addActionListener(e -> {
-            int id =  Integer.parseInt(panelPkg.getFieldText("ID"));
-            JSONObject dataFound = db.getAnimalByID(id);
-            if(dataFound != null){
-                panelPkg.showDbData(dataFound);
-            } else {
-                panelPkg.idNotExistPopup(id);
+        panelPkg.addSearchAction("ID", db::getAnimalByID);
+        //Delete
+        panelPkg.addDeleteAction("ID", db::deleteAnimal);
+        //Add
+        panelPkg.getAddButton().addActionListener(e -> {
+            if(panelPkg.checkMandatoryFields()){
+                try{
+                    int id = Integer.parseInt(panelPkg.getFieldText("ID"));
+                    boolean success = db.insertAnimal(id,
+                            panelPkg.getFieldText("ANIMAL_NAME"),
+                            panelPkg.getFieldText("SPECIES"),
+                            panelPkg.getFieldAsInt("AGE"),
+                            panelPkg.getFieldText("LIVINGTEMP"),
+                            panelPkg.getFieldAsInt("WATER_TANK_ID"),
+                            panelPkg.getFieldAsInt("VETERINARIAN_ID")
+                    );
+                    if(success){
+                        panelPkg.insertSuccessPopup(id);
+                    }
+                } catch (NumberFormatException err) {
+                    panelPkg.invalidDataPopup();
+                }
             }
         });
+        // Update
+        panelPkg.getUpdateButton().addActionListener(e -> {
+            if(panelPkg.checkMandatoryFields()){
+                try{
+                    int id = Integer.parseInt(panelPkg.getFieldText("ID"));
+                    boolean success = db.updateAnimal(id,
+                            panelPkg.getFieldText("ANIMAL_NAME"),
+                            panelPkg.getFieldText("SPECIES"),
+                            panelPkg.getFieldAsInt("AGE"),
+                            panelPkg.getFieldText("LIVINGTEMP"),
+                            panelPkg.getFieldAsInt("WATER_TANK_ID"),
+                            panelPkg.getFieldAsInt("VETERINARIAN_ID")
+                    );
+                    if(success){
+                        panelPkg.updateSuccessPopup(id);
+                    }
+                } catch (NumberFormatException err) {
+                    panelPkg.invalidDataPopup();
+                }
+            }
+        });
+
         managerPanelPackageMap.put("Animal",panelPkg);
     }
 
