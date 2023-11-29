@@ -5,6 +5,7 @@ import org.json.JSONObject;
 import javax.swing.*;
 import java.awt.*;
 import java.util.HashMap;
+import java.util.function.Function;
 
 import static AquariumManagement.src.AquariumManagementUI.buttonSize;
 
@@ -135,7 +136,7 @@ public class ManagerPanelPackage {
         return true;
     }
 
-    public boolean isFieldTextExists(String fieldName) {
+    public boolean fieldTextExists(String fieldName) {
         ManagerInputField field = inputFieldMap.get(fieldName);
         if (field != null) {
             JTextField textField = field.getTextField();
@@ -167,9 +168,68 @@ public class ManagerPanelPackage {
         // TODO: Handle Error
     }
 
+    public void addSearchAction(String idFieldName, Function<Integer, JSONObject> searchFunction){
+        searchButton.addActionListener(e -> {
+            if(fieldTextExists(idFieldName)){
+                int id =  Integer.parseInt(getFieldText(idFieldName));
+                JSONObject dataFound = searchFunction.apply(id);
+                if(dataFound != null){
+                    showDbData(dataFound);
+                } else {
+                    idNotExistPopup(id);
+                }
+            }
+        });
+    }
+
+    public void addDeleteAction(String idFieldName, Function<Integer, Boolean> deleteFunction){
+        deleteButton.addActionListener(e -> {
+            if(fieldTextExists(idFieldName)){
+                int id =  Integer.parseInt(getFieldText(idFieldName));
+                boolean success = deleteFunction.apply(id);
+                if(success){
+                    deleteSuccessPopup(id);
+                } else {
+                    idNotExistPopup(id);
+                }
+            }
+        });
+    }
+
     public void showDbData(JSONObject dbData) {
         for(String key: dbData.keySet()){
             setFieldText(key, dbData.get(key).toString());
         }
     }
+
+    public void idNotExistPopup(int id) {
+        JOptionPane.showMessageDialog(buttonPanel,
+                title + "(ID: "+ id + ") does not exist\n",
+                "Invalid Data", JOptionPane.WARNING_MESSAGE);
+    }
+
+    public void updateSuccessPopup(int id) {
+        JOptionPane.showMessageDialog(buttonPanel,
+                title + "(ID: "+id+") was updated successfully",
+                "Update Data", JOptionPane.WARNING_MESSAGE);
+    }
+
+    public void invalidDataPopup() {
+        JOptionPane.showMessageDialog(buttonPanel,
+                "Please fill in the fields with valid data:\n",
+                "Invalid Data", JOptionPane.WARNING_MESSAGE);
+    }
+
+    public void insertSuccessPopup(int id) {
+        JOptionPane.showMessageDialog(buttonPanel,
+                title+ "(ID: "+id+") was inserted successfully",
+                "Insert Data", JOptionPane.WARNING_MESSAGE);
+    }
+
+    public void deleteSuccessPopup(int id) {
+        JOptionPane.showMessageDialog(buttonPanel,
+                title+"(ID: "+ id + ") was successfully deleted\n",
+                "Delete Success", JOptionPane.WARNING_MESSAGE);
+    }
+
 }
