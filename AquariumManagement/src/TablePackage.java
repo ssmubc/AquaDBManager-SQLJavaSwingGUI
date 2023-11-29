@@ -17,19 +17,19 @@ public class TablePackage {
     private String name;
     private boolean columnInitialized = false;
     private JPanel packagePanel;
-    private CardLayout mainLayout;
+    private Runnable showHome;
     private List<String> colNames; // used for advanced search
     // List to hold references to input components for each row
     private List<RowInputComponents> rowInputComponentsList = new ArrayList<>();
 
 
     private Supplier<JSONArray> dataSupplier;
-    public TablePackage(CardLayout cardLayout, String name, Supplier<JSONArray> dataSupplier) {
+    public TablePackage(Runnable showHome, String name, Supplier<JSONArray> dataSupplier) {
         this.dataSupplier = dataSupplier;
         this.tableModel = new DefaultTableModel();
         this.table = new JTable(tableModel);
         this.name = name;
-        this.mainLayout = cardLayout;
+        this.showHome = showHome;
         initializePanel();
     }
 
@@ -44,7 +44,7 @@ public class TablePackage {
         buttonPanel.add(searchButton);
         this.colNames = Arrays.asList(new String[]{"colname1", "colName2", "asdasd"});
 
-        backButton.addActionListener(e -> mainLayout.show(packagePanel, "HomePanel"));
+        backButton.addActionListener(e -> showHome.run());
         buttonPanel.add(backButton);
 
         packagePanel.add(buttonPanel, BorderLayout.SOUTH);
@@ -107,7 +107,8 @@ public class TablePackage {
         JButton closeButton = new JButton("Close");
 
         submitButton.addActionListener(e -> {
-
+            JSONArray res = collectSearchCriteria();
+            System.out.println(res.toString());
         });
 
         closeButton.addActionListener(e -> searchDialog.dispose());

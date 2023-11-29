@@ -32,13 +32,17 @@ public class AquariumManagementUI extends JFrame {
     TODO: change this to parse data read from DB instead of hard coding if time allows
      */
     private void initializeTablePackages() {
-        tablePackages.add(new TablePackage(cardLayout,"Plant", db::listPlants));
-        tablePackages.add(new TablePackage(cardLayout,"Vendor", db::listVendors));
-        tablePackages.add(new TablePackage(cardLayout,"Inventory", db::listInventory));
-        tablePackages.add(new TablePackage(cardLayout,"Animal", db::listAnimal));
-        TablePackage tankTablePkg = new TablePackage(cardLayout,"Tank", db::listWaterTank);
+        tablePackages.add(new TablePackage(this::showHome,"Plant", db::listPlants));
+        tablePackages.add(new TablePackage(this::showHome,"Vendor", db::listVendors));
+        tablePackages.add(new TablePackage(this::showHome,"Inventory", db::listInventory));
+        tablePackages.add(new TablePackage(this::showHome,"Animal", db::listAnimal));
+        TablePackage tankTablePkg = new TablePackage(this::showHome,"Tank", db::listWaterTank);
         tablePackages.add(tankTablePkg);
 
+    }
+
+    public void showHome(){
+        cardLayout.show(cardsPanel, "HomePanel");
     }
 
     private void initializeManagers() {
@@ -234,8 +238,8 @@ public class AquariumManagementUI extends JFrame {
         setDefaultCloseOperation(EXIT_ON_CLOSE);
         setPreferredSize(new Dimension(WIDTH, HEIGHT));
         setLayout(new BorderLayout());
+        this.cardLayout = new CardLayout();
 
-        cardLayout = new CardLayout();
         cardsPanel = new JPanel(cardLayout); // show and hide panels using their names
 
         JPanel homePanel = createHomePanel();
@@ -243,7 +247,8 @@ public class AquariumManagementUI extends JFrame {
 
         JPanel buttonPanel = new JPanel(new GridLayout(0, 2, 10, 10)); // 0 means any number of rows, and 2 columns
         homePanel.add(buttonPanel, BorderLayout.CENTER);
-
+        initializeTablePackages();
+        initializeManagers();
         // Add show all list
         for (TablePackage tp : tablePackages) {
             cardsPanel.add(tp.getPackagePanel(), tp.getName() + "Panel");
@@ -326,8 +331,6 @@ public class AquariumManagementUI extends JFrame {
         if (status) {
             JOptionPane.showMessageDialog(DBframe, "Connected to Oracle DB successfully!");
             DBframe.dispose();
-            initializeTablePackages();
-            initializeManagers();
             initializeComponents();
         } else {
             JOptionPane.showMessageDialog(DBframe, "Failed to connect to Oracle DB.");
