@@ -17,8 +17,9 @@ public class TablePackage {
     private String name;
     private boolean columnInitialized = false;
     private JPanel packagePanel;
+    private JPanel searchPanel;
     private Runnable showHome;
-    private List<String> colNames; // used for advanced search
+    private List<String[]> colNames; // used for advanced search
     // List to hold references to input components for each row
     private List<RowInputComponents> rowInputComponentsList = new ArrayList<>();
 
@@ -42,7 +43,7 @@ public class TablePackage {
         JButton searchButton = new JButton("Advanced Search"); // New button for advanced search
         searchButton.addActionListener(e -> showAdvancedSearchPanel());
         buttonPanel.add(searchButton);
-        this.colNames = Arrays.asList(new String[]{"colname1", "colName2", "asdasd"});
+        this.colNames = Arrays.asList(new String[][]{{"colname1", "String"}, {"colname2", "Int"}, {"colname3", "Float"}});
 
         backButton.addActionListener(e -> showHome.run());
         buttonPanel.add(backButton);
@@ -91,15 +92,15 @@ public class TablePackage {
         searchDialog.setLayout(new BorderLayout());
         searchDialog.setSize(400, 300);
 
-        JPanel searchPanel = new JPanel();
+        this.searchPanel = new JPanel();
         searchPanel.setLayout(new BoxLayout(searchPanel, BoxLayout.Y_AXIS));
 
         // Add header row
         searchPanel.add(createHeaderRow());
 
         // Create rows for each column name
-        for (String colName : colNames) {
-            searchPanel.add(createRowPanel(colName));
+        for (String[] colName : colNames) {
+            searchPanel.add(createRowPanel(colName[0], colName[1]));
         }
 
         JPanel buttonPanel = new JPanel();
@@ -107,8 +108,10 @@ public class TablePackage {
         JButton closeButton = new JButton("Close");
 
         submitButton.addActionListener(e -> {
-            JSONArray res = collectSearchCriteria();
-            System.out.println(res.toString());
+            if(checkInputs()) {
+                JSONArray res = collectSearchCriteria();
+                System.out.println(res.toString());
+            }
         });
 
         closeButton.addActionListener(e -> searchDialog.dispose());
@@ -121,7 +124,7 @@ public class TablePackage {
         searchDialog.setVisible(true);
     }
 
-    public void setColNames(List<String> colNames){
+    public void setColNames(List<String[]> colNames){
         this.colNames = colNames;
     }
 
@@ -140,31 +143,48 @@ public class TablePackage {
     }
 
     private JPanel createHeaderRow() {
-        JPanel headerPanel = new JPanel(new GridLayout(1, 5));
+        JPanel headerPanel = new JPanel(new GridLayout(1, 4));
         headerPanel.add(new JLabel("Name"));
-        headerPanel.add(new JLabel("Display"));
         headerPanel.add(new JLabel("Condition"));
         headerPanel.add(new JLabel("Comparison"));
         headerPanel.add(new JLabel("Value"));
         return headerPanel;
     }
 
-    private JPanel createRowPanel(String colName) {
-        JPanel rowPanel = new JPanel(new GridLayout(1, 5));
+    private JPanel createRowPanel(String colName, String type) {
+        JPanel rowPanel = new JPanel(new GridLayout(1, 4));
         rowPanel.add(new JLabel(colName));
+        String[] comparisonOptions;
+        if(type.equals("String")){
+            comparisonOptions = new String[]{"=="};
+        } else{
+            comparisonOptions = new String[]{">", "<", ">=", "<=", "=="};
+        }
 
-        JCheckBox displayCheckBox = new JCheckBox();
-        JComboBox<String> conditionComboBox = new JComboBox<>(new String[]{"Condition 1", "Condition 2"});
-        JTextField comparisonField = new JTextField(10); // Assuming a comparison field is needed
+        JComboBox<String> conditionComboBox = new JComboBox<>(new String[]{"None", "AND", "OR"});
+        JComboBox<String> comparisonField = new JComboBox<>(comparisonOptions);
         JTextField valueField = new JTextField(10);
 
-        rowPanel.add(displayCheckBox);
+        // Initially hide comparisonField and valueField
+        comparisonField.setVisible(false);
+        valueField.setVisible(false);
+
+        // Add action listener to conditionComboBox
+        conditionComboBox.addActionListener(e -> {
+            String selectedCondition = (String) conditionComboBox.getSelectedItem();
+            boolean isNone = selectedCondition.equals("None");
+            comparisonField.setVisible(!isNone);
+            valueField.setVisible(!isNone);
+            rowPanel.revalidate();
+        });
+
+
         rowPanel.add(conditionComboBox);
         rowPanel.add(comparisonField);
         rowPanel.add(valueField);
 
         // Store references to input components
-        rowInputComponentsList.add(new RowInputComponents(colName, displayCheckBox, conditionComboBox, comparisonField, valueField));
+        rowInputComponentsList.add(new RowInputComponents(colName, conditionComboBox, comparisonField, valueField, type));
 
         return rowPanel;
     }
@@ -173,18 +193,66 @@ public class TablePackage {
     // Inner class to hold references to input components of a row
     private class RowInputComponents {
         String columnName;
-        JCheckBox displayCheckBox;
         JComboBox<String> conditionComboBox;
-        JTextField comparisonField;
+        JComboBox<String> comparisonField;
         JTextField valueField;
 
-        RowInputComponents(String columnName, JCheckBox displayCheckBox, JComboBox<String> conditionComboBox, JTextField comparisonField, JTextField valueField) {
+        String type;
+
+        RowInputComponents(String columnName, JComboBox<String> conditionComboBox,
+                           JComboBox<String> comparisonField, JTextField valueField, String type) {
             this.columnName = columnName;
-            this.displayCheckBox = displayCheckBox;
             this.conditionComboBox = conditionComboBox;
             this.comparisonField = comparisonField;
             this.valueField = valueField;
+            this.type = type;
         }
+        public boolean checkInput(){
+            String selectedCondition = (String) conditionComboBox.getSelectedItem();
+            boolean isNone = selectedCondition.equals("None");
+            if(isNone){
+                return true;
+            }
+            String inputValue = valueField.getText();
+            if(valueField.getText().equals("")){
+                JOptionPane.showMessageDialog(searchPanel,
+                        "Please fill " + columnName +" value",
+                        "Missing Data", JOptionPane.WARNING_MESSAGE);
+                return false;
+            }
+
+            if(type.equals("Int")){
+                try{
+                    Integer.parseInt(inputValue);
+                } catch (NumberFormatException err){
+                    JOptionPane.showMessageDialog(searchPanel,
+                            "Please use number(Integer) for " + columnName +" value",
+                            "Invalid Data", JOptionPane.WARNING_MESSAGE);
+                    return false;
+                }
+            }
+
+            if(type.equals("Float")){
+                try{
+                    Integer.parseInt(inputValue);
+                } catch (NumberFormatException err){
+                    JOptionPane.showMessageDialog(searchPanel,
+                            "Please use number for " + columnName +" value",
+                            "Invalid Data", JOptionPane.WARNING_MESSAGE);
+                    return false;
+                }
+            }
+            return true;
+        }
+    }
+
+    private boolean checkInputs(){
+        for(RowInputComponents ric : rowInputComponentsList){
+            if(!ric.checkInput()){
+                return false;
+            }
+        }
+        return true;
     }
 
     private JSONArray collectSearchCriteria() {
@@ -193,9 +261,8 @@ public class TablePackage {
         for (RowInputComponents components : rowInputComponentsList) {
             JSONObject criteria = new JSONObject();
             criteria.put("Name", components.columnName);
-            criteria.put("Display", components.displayCheckBox.isSelected());
             criteria.put("Condition", components.conditionComboBox.getSelectedItem().toString());
-            criteria.put("Comparison", components.comparisonField.getText()); // Assuming a 'Comparison' field is text input
+            criteria.put("Comparison", components.comparisonField.getSelectedItem().toString()); // Assuming a 'Comparison' field is text input
             criteria.put("Value", components.valueField.getText());
 
             searchCriteriaArray.put(criteria);
