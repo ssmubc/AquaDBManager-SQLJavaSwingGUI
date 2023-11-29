@@ -783,8 +783,10 @@ public class AquariumManagementDB {
     }
 
     // THIS COVERS THE ENTITIES WATERTANK (WATERTANKLOGISTICS AND WATERTANKPH) AND RELATION MAINTAINS (SEPARATE ENTITY) AND PARTOF
-    public boolean insertWaterTank(int id, String name, float volume, float temperature, String lighting_level, int exhibit_id, float pH, int aquarist_id) {
-        String sql1 = "INSERT INTO WATERTANKLOGISTICS (ID, WATER_TANK_LOGISTICS_NAME, VOLUME, TEMPERATURE, LIGHTINGLEVEL, EXHIBIT_ID) VALUES (?, ?, ?, ?, ?, ?)";
+    public boolean insertWaterTank(int id, String name, float volume, float temperature, String lighting_level,
+                                   int exhibit_id, float pH, int aquarist_id) {
+        String sql1 = "INSERT INTO WATERTANKLOGISTICS " +
+                "(ID, WATER_TANK_LOGISTICS_NAME, VOLUME, TEMPERATURE, LIGHTINGLEVEL, EXHIBIT_ID) VALUES (?, ?, ?, ?, ?, ?)";
         String sql2 = "INSERT INTO WATERTANKPH (TEMPERATURE, PH) VALUES (?, ?)";
         String sql3 = "INSERT INTO AQUARIST_MAINTAIN_WATERTANK (AQUARIST_ID, WATER_TANK_ID) VALUES (?, ?)";
 
@@ -882,14 +884,18 @@ public class AquariumManagementDB {
     }
 
 
-    public boolean updateWaterTank(int id, String name, float volume, float temperature, String lighting_level, int exhibit_id, float pH) {
+    public boolean updateWaterTank(int id, String name, float volume, float temperature, String lighting_level,
+                                   int exhibit_id, float pH, int aquarist_id) {
         String sql1 = "UPDATE WATERTANKLOGISTICS SET WATER_TANK_LOGISTICS_NAME = ?, VOLUME = ?, " +
                 "TEMPERATURE = ?, LIGHTINGLEVEL = ?, EXHIBIT_ID = ? WHERE ID = ?";
         String sql2 = "UPDATE WATERTANKPH SET PH = ? WHERE TEMPERATURE = ?";
+        String sql3 = "UPDATE AQUARIST_MAINTAIN_WATERTANK SET AQUARIST_ID = ? WHERE WATER_TANK_ID = ?";
 
         try {
             PreparedStatement preparedStatement1 = connection.prepareStatement(sql1);
             PreparedStatement preparedStatement2 = connection.prepareStatement(sql2);
+            PreparedStatement preparedStatement3 = connection.prepareStatement(sql3);
+
 
             // query argument setting for statement 1
             preparedStatement1.setString(1, name);
@@ -903,13 +909,18 @@ public class AquariumManagementDB {
             preparedStatement2.setFloat(1, pH);
             preparedStatement2.setFloat(2, temperature);
 
+            preparedStatement3.setInt(1, aquarist_id);
+            preparedStatement3.setInt(2, id);
+
             preparedStatement1.executeUpdate();
             preparedStatement2.executeUpdate();
+            preparedStatement3.executeUpdate();
 
             connection.commit();
 
             preparedStatement1.close();
             preparedStatement2.close();
+            preparedStatement3.close();
 
             System.out.println("Data from WATERTANK was inserted properly");
             return true;
@@ -998,7 +1009,7 @@ public class AquariumManagementDB {
         return waterTankArray;
     }
 
-    public JSONObject listWaterTankByID(int id) {
+    public JSONObject getWaterTankByID(int id) {
         String sql = "SELECT wl.ID, wl.WATER_TANK_LOGISTICS_NAME, wl.VOLUME, wl.TEMPERATURE, wp.PH, wl.LIGHTINGLEVEL, wl.EXHIBIT_ID, m.AQUARIST_ID " +
                 "FROM WATERTANKLOGISTICS wl " +
                 "JOIN WATERTANKPH wp ON wl.TEMPERATURE = wp.TEMPERATURE " +
