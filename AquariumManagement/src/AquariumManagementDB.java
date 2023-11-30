@@ -87,11 +87,36 @@ public class AquariumManagementDB {
         }
     }
 
-    public static List<String> getColumnNames(String tableName) {
+    public List<String> getAllTableNames() {
+        List<String> tableNames = new ArrayList<>();
+        if (connection != null) {
+            try {
+                DatabaseMetaData dbMetaData = connection.getMetaData();
+                // Retrieve tables only from the current schema(user space?)
+                String schemaPattern = connection.getSchema();
+                System.out.println(schemaPattern);
+
+                String[] types = {"TABLE"};
+                ResultSet rs = dbMetaData.getTables(null, schemaPattern, "%", types);
+
+                while (rs.next()) {
+                    // The table name is in the third column
+                    tableNames.add(rs.getString(3));
+                }
+                rs.close();
+            } catch (SQLException e) {
+                System.out.println(e.getMessage());
+            }
+        }
+        return tableNames;
+    }
+    public List<String> getColumnNames(String tableName) {
         List<String> columnNames = new ArrayList<>();
         try {
             DatabaseMetaData metaData = connection.getMetaData();
-            ResultSet columns = metaData.getColumns(null, null, tableName, null);
+            // Retrieve tables only from the current schema(user space?)
+            String schemaPattern = connection.getSchema();
+            ResultSet columns = metaData.getColumns(null, schemaPattern, tableName, null);
             while (columns.next()) {
                 String columnName = columns.getString("COLUMN_NAME");
                 columnNames.add(columnName);
