@@ -463,11 +463,10 @@ public class AquariumManagementDB {
         } catch (SQLException e) {
             System.out.println("Data FROM ITEM was not listed properly");
         }
-
-        if (itemsJSONArray.isEmpty()) {
-            return null;
-        }
-        return itemsJSONArray;
+            if (itemsJSONArray.isEmpty()) {
+                return null;
+            }
+            return itemsJSONArray;
     }
 
     public boolean insertFood(int id, String exp_date, String food_type) {
@@ -1164,20 +1163,22 @@ public class AquariumManagementDB {
                 System.out.println("ID: " + water_tank_id + ", NAME: " + name + ", VOLUME: " + volume + ", TEMPERATURE: " + temperature +
                         ", PH: " + pH + ", LIGHTINGLEVEL: " + lighting_level + ", EXHIBIT_ID: " + exhibit_id
                         + " , AQUARIST_ID: " + aquarist_id);
+
+                }
+
+                resultSet.close();
+
+                System.out.println("Data from WATERTANK was listed successfully");
+
+            } catch (SQLException e) {
+                System.out.println("Data from WATERTANK was not listed properly");
             }
 
-            resultSet.close();
+            if (waterTankArray.isEmpty()) {
+                return null;
+            }
+            return waterTankArray;
 
-            System.out.println("Data from WATERTANK was listed successfully");
-
-        } catch (SQLException e) {
-            System.out.println("Data from WATERTANK was not listed properly");
-        }
-
-        if (waterTankArray.isEmpty()) {
-            return null;
-        }
-        return waterTankArray;
     }
 
     // COVERS ENTITIES ANIMAL, FEED, EXHIBIT AND CLEAN (NEED TO FINISH CLEAN AND FEED)

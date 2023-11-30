@@ -1,5 +1,7 @@
 package AquariumManagement.src;
 
+import org.json.JSONObject;
+
 import javax.swing.*;
 import java.awt.*;
 import java.util.HashMap;
@@ -9,12 +11,16 @@ import static AquariumManagement.src.AquariumManagementUI.buttonSize;
 public class ManagerPanelPackage {
     private String title;
     private JButton mainButton;
+    private JButton searchButton;
     private JButton addButton;
     private JButton updateButton;
     private JButton deleteButton;
 
     private JPanel panel;
     private JPanel buttonPanel;
+    // Map DB Field Name to InputField
+    // Key: DB_FIELD_NAME
+    // Value: ManagerInputField
     private HashMap<String, ManagerInputField> inputFieldMap;
 
     // input fields: {{String displayName, String placeholder(optional)}}
@@ -29,11 +35,11 @@ public class ManagerPanelPackage {
 
         for (int i=0; i < inputFields.length; i++){
             ManagerInputField managerField;
-
-            if (inputFields[i].length > 1){
-                managerField = new ManagerInputField(inputFields[i][0], inputFields[i][1]);
+            boolean isMandatory = inputFields[i][2].equals("True");
+            if (inputFields[i].length > 3){
+                managerField = new ManagerInputField(inputFields[i][1], isMandatory, inputFields[i][3]);
             } else {
-                managerField = new ManagerInputField(inputFields[i][0]);
+                managerField = new ManagerInputField(inputFields[i][1], isMandatory);
             }
 
 
@@ -46,12 +52,14 @@ public class ManagerPanelPackage {
         panel.add(inputPanel, BorderLayout.CENTER);
 
         // Initialize buttons
+        searchButton = new JButton("Search");
         addButton = new JButton("Add");
         updateButton = new JButton("Update");
         deleteButton = new JButton("Delete");
 
         // Create a panel to hold the buttons in one row
         buttonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER));
+        buttonPanel.add(searchButton);
         buttonPanel.add(addButton);
         buttonPanel.add(updateButton);
         buttonPanel.add(deleteButton);
@@ -63,7 +71,6 @@ public class ManagerPanelPackage {
     private void popupPanel(){
         JFrame frame = new JFrame(title);
         frame.setSize(400, 300);
-        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.add(panel);
         frame.setVisible(true);
     }
@@ -74,6 +81,7 @@ public class ManagerPanelPackage {
     public String getTitle(){
         return title;
     }
+    public JPanel getButtonPanel() {return buttonPanel;}
 
     public JButton getMainButton(){
         return mainButton;
@@ -84,10 +92,84 @@ public class ManagerPanelPackage {
     }
 
     public JButton getDeleteButton(){
-        return addButton;
+        return deleteButton;
     }
 
     public JButton getUpdateButton(){
-        return addButton;
+        return updateButton;
+    }
+
+    public JButton getSearchButton(){
+        return searchButton;
+    }
+
+    /*
+    * if anything miss, show warning and return false
+    * otherwise return true
+    * */
+    public boolean checkMandatoryFields() {
+        StringBuilder missingFields = new StringBuilder();
+        boolean isAnyFieldMissing = false;
+
+        for (String key : inputFieldMap.keySet()) {
+            ManagerInputField field = inputFieldMap.get(key);
+            if (field.isMandatory()) {
+                JTextField textField = field.getTextField();
+                String text = textField.getText().trim(); // Trim to remove leading/trailing whitespaces
+                String placeholder = textField.getToolTipText(); // Retrieve placeholder from tooltip
+
+                if (text.isEmpty() || text.equals(placeholder)) {
+                    missingFields.append(field.getLabel().getText()).append("\n");
+                    isAnyFieldMissing = true;
+                }
+            }
+        }
+
+        if (isAnyFieldMissing) {
+            // Show popup message with missing fields
+            JOptionPane.showMessageDialog(panel,
+                    "Please fill in the following mandatory fields:\n" + missingFields.toString(),
+                    "Missing Data", JOptionPane.WARNING_MESSAGE);
+            return false;
+        }
+        return true;
+    }
+
+    public boolean isFieldTextExists(String fieldName) {
+        ManagerInputField field = inputFieldMap.get(fieldName);
+        if (field != null) {
+            JTextField textField = field.getTextField();
+            String text = textField.getText().trim(); // Trim to remove leading/trailing whitespaces
+            String placeholder = textField.getToolTipText(); // Retrieve placeholder from tooltip
+
+            // Check if the text is not empty and not equal to the placeholder
+            if (text.isEmpty() || text.equals(placeholder)) {
+                // Show popup message indicating the field with invalid data
+                JOptionPane.showMessageDialog(panel,
+                        "Please provide valid data for the field: " + field.getLabel().getText(),
+                        "Invalid Data", JOptionPane.WARNING_MESSAGE);
+                return false;
+            }
+            return true; // Text is valid
+        }
+
+        // Show popup message indicating that the field was not found
+        JOptionPane.showMessageDialog(panel,
+                "Field not found: " + fieldName,
+                "Field Not Found", JOptionPane.ERROR_MESSAGE);
+        return false; // Field not found
+    }
+
+    private void setFieldText(String dbFieldName, String text){
+        if(inputFieldMap.containsKey(dbFieldName)){
+            inputFieldMap.get(dbFieldName).getTextField().setText(text);
+        }
+        // TODO: Handle Error
+    }
+
+    public void showDbData(JSONObject dbData) {
+        for(String key: dbData.keySet()){
+            setFieldText(key, dbData.get(key).toString());
+        }
     }
 }
