@@ -197,11 +197,36 @@ public class AquariumManagementDB {
         }
     }
 
-    public static List<String> getColumnNames(String tableName) {
+    public List<String> getAllTableNames() {
+        List<String> tableNames = new ArrayList<>();
+        if (connection != null) {
+            try {
+                DatabaseMetaData dbMetaData = connection.getMetaData();
+                // Retrieve tables only from the current schema(user space?)
+                String schemaPattern = connection.getSchema();
+                System.out.println(schemaPattern);
+
+                String[] types = {"TABLE"};
+                ResultSet rs = dbMetaData.getTables(null, schemaPattern, "%", types);
+
+                while (rs.next()) {
+                    // The table name is in the third column
+                    tableNames.add(rs.getString(3));
+                }
+                rs.close();
+            } catch (SQLException e) {
+                System.out.println(e.getMessage());
+            }
+        }
+        return tableNames;
+    }
+    public List<String> getColumnNames(String tableName) {
         List<String> columnNames = new ArrayList<>();
         try {
             DatabaseMetaData metaData = connection.getMetaData();
-            ResultSet columns = metaData.getColumns(null, null, tableName, null);
+            // Retrieve tables only from the current schema(user space?)
+            String schemaPattern = connection.getSchema();
+            ResultSet columns = metaData.getColumns(null, schemaPattern, tableName, null);
             while (columns.next()) {
                 String columnName = columns.getString("COLUMN_NAME");
                 columnNames.add(columnName);
@@ -896,8 +921,10 @@ public class AquariumManagementDB {
     }
 
     // THIS COVERS THE ENTITIES WATERTANK (WATERTANKLOGISTICS AND WATERTANKPH) AND RELATION MAINTAINS (SEPARATE ENTITY) AND PARTOF
-    public boolean insertWaterTank(int id, String name, float volume, float temperature, String lighting_level, int exhibit_id, float pH, int aquarist_id) {
-        String sql1 = "INSERT INTO WATERTANKLOGISTICS (ID, WATER_TANK_LOGISTICS_NAME, VOLUME, TEMPERATURE, LIGHTINGLEVEL, EXHIBIT_ID) VALUES (?, ?, ?, ?, ?, ?)";
+    public boolean insertWaterTank(int id, String name, float volume, float temperature, String lighting_level,
+                                   int exhibit_id, float pH, int aquarist_id) {
+        String sql1 = "INSERT INTO WATERTANKLOGISTICS " +
+                "(ID, WATER_TANK_LOGISTICS_NAME, VOLUME, TEMPERATURE, LIGHTINGLEVEL, EXHIBIT_ID) VALUES (?, ?, ?, ?, ?, ?)";
         String sql2 = "INSERT INTO WATERTANKPH (TEMPERATURE, PH) VALUES (?, ?)";
         String sql3 = "INSERT INTO AQUARIST_MAINTAIN_WATERTANK (AQUARIST_ID, WATER_TANK_ID) VALUES (?, ?)";
 
@@ -987,14 +1014,18 @@ public class AquariumManagementDB {
     }
 
 
-    public boolean updateWaterTank(int id, String name, float volume, float temperature, String lighting_level, int exhibit_id, float pH) {
+    public boolean updateWaterTank(int id, String name, float volume, float temperature, String lighting_level,
+                                   int exhibit_id, float pH, int aquarist_id) {
         String sql1 = "UPDATE WATERTANKLOGISTICS SET WATER_TANK_LOGISTICS_NAME = ?, VOLUME = ?, " +
                 "TEMPERATURE = ?, LIGHTINGLEVEL = ?, EXHIBIT_ID = ? WHERE ID = ?";
         String sql2 = "UPDATE WATERTANKPH SET PH = ? WHERE TEMPERATURE = ?";
+        String sql3 = "UPDATE AQUARIST_MAINTAIN_WATERTANK SET AQUARIST_ID = ? WHERE WATER_TANK_ID = ?";
 
         try {
             PreparedStatement preparedStatement1 = connection.prepareStatement(sql1);
             PreparedStatement preparedStatement2 = connection.prepareStatement(sql2);
+            PreparedStatement preparedStatement3 = connection.prepareStatement(sql3);
+
 
             // query argument setting for statement 1
             preparedStatement1.setString(1, name);
@@ -1008,13 +1039,18 @@ public class AquariumManagementDB {
             preparedStatement2.setFloat(1, pH);
             preparedStatement2.setFloat(2, temperature);
 
+            preparedStatement3.setInt(1, aquarist_id);
+            preparedStatement3.setInt(2, id);
+
             preparedStatement1.executeUpdate();
             preparedStatement2.executeUpdate();
+            preparedStatement3.executeUpdate();
 
             connection.commit();
 
             preparedStatement1.close();
             preparedStatement2.close();
+            preparedStatement3.close();
 
             System.out.println("Data from WATERTANK was inserted properly");
             return true;
@@ -1103,7 +1139,7 @@ public class AquariumManagementDB {
         return waterTankArray;
     }
 
-    public JSONObject listWaterTankByID(int id) {
+    public JSONObject getWaterTankByID(int id) {
         String sql = "SELECT wl.ID, wl.WATER_TANK_LOGISTICS_NAME, wl.VOLUME, wl.TEMPERATURE, wp.PH, wl.LIGHTINGLEVEL, wl.EXHIBIT_ID, m.AQUARIST_ID " +
                 "FROM WATERTANKLOGISTICS wl " +
                 "JOIN WATERTANKPH wp ON wl.TEMPERATURE = wp.TEMPERATURE " +
@@ -1688,14 +1724,14 @@ public class AquariumManagementDB {
                 int waterTankID = animalResult.getInt("WATER_TANK_ID");
                 int veterinarianID = animalResult.getInt("VETERINARIAN_ID");
 
-                JSONObject animal = new JSONObject();
-                animal.put("ID", animal_id);
-                animal.put("ANIMAL_NAME", name);
-                animal.put("SPECIES", species);
-                animal.put("AGE", age);
-                animal.put("LIVINGTEMP", living_temp);
-                animal.put("WATER_TANK_ID", waterTankID);
-                animal.put("VETERINARIAN_ID", veterinarianID);
+
+                animalItem.put("ID", animal_id);
+                animalItem.put("ANIMAL_NAME", name);
+                animalItem.put("SPECIES", species);
+                animalItem.put("AGE", age);
+                animalItem.put("LIVINGTEMP", living_temp);
+                animalItem.put("WATER_TANK_ID", waterTankID);
+                animalItem.put("VETERINARIAN_ID", veterinarianID);
 
                 System.out.println("ID: " + id + ", Name: " + name + ", Species: " + species + ", Age: " + age + ", Living Temperature: " + living_temp
                         + ", Water Tank ID: " + waterTankID + ", Veterinarian ID: " + veterinarianID);
