@@ -1,5 +1,6 @@
 package AquariumManagement.src;
 
+import org.json.JSONArray;
 import org.json.JSONObject;
 
 import javax.swing.*;
@@ -37,8 +38,23 @@ public class AquariumManagementUI extends JFrame {
         tablePackages.add(new TablePackage(this::showHome,"Inventory", db::listInventory));
         tablePackages.add(new TablePackage(this::showHome,"Animal", db::listAnimal));
         TablePackage tankTablePkg = new TablePackage(this::showHome,"Tank", db::listWaterTank);
-        tablePackages.add(tankTablePkg);
 
+        tablePackages.add(tankTablePkg);
+        tankTablePkg.setAdvancedSearch(getTankFields());
+
+    }
+
+    private JSONArray getTankFields(){
+
+        String tankFieldsData = "[{\"DB_NAME\":\"ID\", \"DISPLAY_NAME\":\"ID\", \"TYPE\":\"Int\"}," +
+                "{\"DB_NAME\":\"WATER_TANK_LOGISTICS_NAME\", \"DISPLAY_NAME\":\"Name\", \"TYPE\":\"String\"}," +
+                "{\"DB_NAME\":\"VOLUME\", \"DISPLAY_NAME\":\"Volume(l)\", \"TYPE\":\"Float\"}," +
+                "{\"DB_NAME\":\"TEMPERATURE\", \"DISPLAY_NAME\":\"Temperature(°C)\", \"TYPE\":\"Float\"}," +
+                "{\"DB_NAME\":\"LIGHTINGLEVEL\", \"DISPLAY_NAME\":\"Lighting Level\", \"TYPE\":\"String\"}," +
+                "{\"DB_NAME\":\"EXHIBIT_ID\", \"DISPLAY_NAME\":\"In Exhibit(ID)\", \"TYPE\":\"Int\"}," +
+                "{\"DB_NAME\":\"PH\", \"DISPLAY_NAME\":\"Ph\", \"TYPE\":Float}," +
+                "{\"DB_NAME\":\"AQUARIST_ID\", \"DISPLAY_NAME\": \"Aquarist(ID)\", \"TYPE\":\"Int\"}]";
+        return new JSONArray(tankFieldsData);
     }
 
     public void showHome(){
