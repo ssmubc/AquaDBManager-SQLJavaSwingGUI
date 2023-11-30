@@ -277,6 +277,15 @@ public class AquariumManagementUI extends JFrame {
             );
             buttonPanel.add(button);
         }
+        RawDataTablePackage rdtp = new RawDataTablePackage(this::showHome, "View DB Tables", db);
+        cardsPanel.add(rdtp.getPackagePanel(), rdtp.getName());
+        JButton btn = new JButton(rdtp.getName());
+        btn.setPreferredSize(buttonSize);
+        btn.addActionListener(e ->{
+            cardLayout.show(cardsPanel, rdtp.getName());
+        });
+        buttonPanel.add(btn);
+
 
         add(cardsPanel, BorderLayout.CENTER);
 
