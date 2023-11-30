@@ -67,14 +67,10 @@ public class AquariumManagementDB {
 
         StringBuilder sql = new StringBuilder("SELECT ");
 
-        String tableName = relationObj.getString("tableName");
+        String tableName = relationObj.getString("TableName");
 
-        JSONArray fieldsArray = new JSONArray();
-
-        if (relationObj.has(tableName)) {
-            fieldsArray = relationObj.getJSONArray("Fields");
-        }
-
+        JSONArray fieldsArray = relationObj.getJSONArray("Fields");
+        
         if (fieldsArray != null && !fieldsArray.isEmpty()) {
             for (int i = 0; i < fieldsArray.length(); i++) {
                 String fieldName = fieldsArray.getString(i);
