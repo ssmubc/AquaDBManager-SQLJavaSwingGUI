@@ -3,6 +3,7 @@ package AquariumManagement.src;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
+import java.math.BigDecimal;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
@@ -52,6 +53,54 @@ public class AquariumManagementDB {
             return false;
         }
     }
+
+    // retrieves data from any entity
+    public JSONArray getRawData(JSONObject relationObj) {
+        JSONArray dataArray = new JSONArray();
+
+        String tableName = relationObj.getString("tableName");
+        JSONArray fieldsArray = relationObj.getJSONArray("Fields");
+
+        // DEFAULT: select all attributes
+        String selectedFields = "*";
+        if (fieldsArray != null && !fieldsArray.isEmpty()) {
+            selectedFields = String.join(", ", fieldsArray.toString());
+        }
+
+        String sql = "SELECT " + selectedFields +
+                " FROM " + tableName;
+
+        try {
+
+            PreparedStatement preparedStatement = connection.prepareStatement(sql);
+
+            ResultSet resultSet = preparedStatement.executeQuery();
+
+            while (resultSet.next()) {
+                JSONObject tuple = new JSONObject();
+
+                // retrieve fields and put it into the JSONObject
+                // Source: https://docs.oracle.com/javase/8/docs/api/java/sql/ResultSet.html
+                for (int i = 1; i <= resultSet.getMetaData().getColumnCount(); i++) {
+                    String fieldName = resultSet.getMetaData().getColumnName(i);
+                    tuple.put(fieldName, resultSet.getObject(i));
+                }
+
+                dataArray.put(tuple);
+            }
+
+            resultSet.close();
+            preparedStatement.close();
+
+            System.out.println("Data was retrieved successfully");
+
+        } catch (SQLException e) {
+            System.out.println("Data failed while retrieving");
+        }
+
+        return dataArray;
+    }
+
     // In this relation, I am accounting for the entities: INVENTORY and SHELF
     public boolean insertInventory(int id, String location, int shelfNumber, String isFull) {
         String sql = "INSERT INTO INVENTORY (ID, LOCATION) VALUES (?, ?)";
@@ -162,27 +211,20 @@ public class AquariumManagementDB {
         }
     }
 
+    // REMOVE SHELF_ON_INVENTORY SINCE ORACLE SUPPORTS ON DELETE CASCADE
     public boolean deleteInventory(int id, int shelfNumber) {
         String sql = "DELETE FROM INVENTORY WHERE ID = ?";
-        String sql2 = "DELETE FROM SHELFININVENTORY WHERE INVENTORY_ID = ? AND SHELF_NUMBER = ?";
 
         try {
             PreparedStatement preparedStatement = connection.prepareStatement(sql);
-            PreparedStatement preparedStatement2 = connection.prepareStatement(sql2);
 
             preparedStatement.setInt(1, id);
 
-
-            preparedStatement2.setInt(1, id);
-            preparedStatement2.setInt(2, shelfNumber);
-
             preparedStatement.executeUpdate();
-            preparedStatement2.executeUpdate();
 
             connection.commit();
 
             preparedStatement.close();
-            preparedStatement2.close();
 
             System.out.println("Data from INVENTORY deleted successfully.");
             return true;
@@ -195,9 +237,11 @@ public class AquariumManagementDB {
     }
 
     public JSONArray listInventory() {
+
         String sql = "SELECT i.ID, i.LOCATION, s.SHELF_NUMBER, s.IS_FULL " +
                 "FROM INVENTORY i " +
                 "JOIN SHELFININVENTORY s ON i.ID = s.INVENTORY_ID";
+
         JSONArray inventoryJSONArray = new JSONArray();
 
         try {
@@ -318,10 +362,10 @@ public class AquariumManagementDB {
         }
     }
 
+    // REMOVE DELETESUPPLY SINCE ORACLE SUPPORTS ON DELETE CASCADE
     public boolean deleteItem(int id, int vendorID) {
         String getItemNameSql = "SELECT NAME FROM ITEMQUANTITY WHERE ID = ?";
         String deleteItemQuantitySql = "DELETE FROM ITEMQUANTITY WHERE ID = ?";
-        String deleteSupplySql = "DELETE FROM SUPPLY WHERE ITEMID = ? AND VENDORID = ?";
         String deleteItemUnitSql = "DELETE FROM ITEMUNIT WHERE NAME = ?";
 
         try (PreparedStatement getItemNameStatement = connection.prepareStatement(getItemNameSql)) {
@@ -334,21 +378,16 @@ public class AquariumManagementDB {
                     itemName = resultSet.getString("NAME");
 
                     try (PreparedStatement deleteQuantityStatement = connection.prepareStatement(deleteItemQuantitySql);
-                         PreparedStatement deleteUnitStatement = connection.prepareStatement(deleteItemUnitSql);
-                         PreparedStatement deleteSupplyStatement = connection.prepareStatement(deleteSupplySql)) {
+                         PreparedStatement deleteUnitStatement = connection.prepareStatement(deleteItemUnitSql)) {
 
                         // Delete from ITEMQUANTITY
                         deleteQuantityStatement.setInt(1, id);
-                        deleteQuantityStatement.executeUpdate();
 
                         // Delete from ITEMUNIT
                         deleteUnitStatement.setString(1, itemName);
-                        deleteUnitStatement.executeUpdate();
 
-                        // DELETE FROM SUPPLY
-                        deleteSupplyStatement.setInt(1, id);
-                        deleteSupplyStatement.setInt(2, vendorID);
-                        deleteSupplyStatement.executeUpdate();
+                        deleteQuantityStatement.executeUpdate();
+                        deleteUnitStatement.executeUpdate();
                     }
 
                     System.out.println("Data from ITEM and SUPPLY was deleted properly");
@@ -446,10 +485,9 @@ public class AquariumManagementDB {
 
             System.out.println("Data FROM ITEM was listed successfully");
 
-            } catch (SQLException e) {
-                System.out.println("Data FROM ITEM was not listed properly");
-            }
-
+        } catch (SQLException e) {
+            System.out.println("Data FROM ITEM was not listed properly");
+        }
             if (itemsJSONArray.isEmpty()) {
                 return null;
             }
@@ -482,6 +520,7 @@ public class AquariumManagementDB {
         }
     }
 
+    // DONT REALLY NEED THIS SINCE DELETING tuple in ITEM will delete all foreign id references
     public boolean deleteFood(int id) {
         String sql = "DELETE FROM FOOD WHERE ITEM_ID = ?";
 
@@ -548,13 +587,13 @@ public class AquariumManagementDB {
                 String food_type = resultSet.getString("FOOD_TYPE");
 
                 JSONObject food = new JSONObject();
-                food.put("FOOD_ID", food_id);
+                food.put("ITEM_ID", food_id);
                 food.put("EXP_DATE", exp_date);
                 food.put("FOOD_TYPE", food_type);
 
                 foodJSONArray.put(food);
 
-                System.out.println("FOOD_ID: " + food_id + ", EXP_DATE: " + exp_date + ", FOOD_TYPE: " + food_type);
+                System.out.println("ITEM_ID: " + food_id + ", EXP_DATE: " + exp_date + ", FOOD_TYPE: " + food_type);
 
             }
 
@@ -589,7 +628,7 @@ public class AquariumManagementDB {
                 String exp_date = resultSet.getString("EXP_DATE");
                 String food_type = resultSet.getString("FOOD_TYPE");
 
-                food.put("FOOD_ID", food_id);
+                food.put("ITEM_ID", food_id);
                 food.put("EXP_DATE", exp_date);
                 food.put("FOOD_TYPE", food_type);
 
@@ -639,25 +678,21 @@ public class AquariumManagementDB {
         }
     }
 
-    // HANDLES DELETE IN EQUIPMENT AND INSTALLED
+    // HANDLES DELETE IN EQUIPMENT
+    // REMOVES INSTALLED SINCE ORACLE HAS ON DELETE CASCADE
     public boolean deleteEquipment(int id) {
         String sql = "DELETE FROM equipment WHERE ITEM_ID = ?";
-        String sql2 = "DELETE FROM INSTALLED WHERE EQUIPMENT_ID = ?";
 
         try {
             PreparedStatement preparedStatement = connection.prepareStatement(sql);
-            PreparedStatement preparedStatement1 = connection.prepareStatement(sql2);
 
             preparedStatement.setInt(1, id);
-            preparedStatement1.setInt(1, id);
 
             preparedStatement.executeUpdate();
-            preparedStatement1.execute();
 
             connection.commit();
 
             preparedStatement.close();
-            preparedStatement1.close();
 
             System.out.println("Data from EQUIPMENT deleted successfully.");
             return true;
@@ -715,7 +750,7 @@ public class AquariumManagementDB {
                 String date_installed = resultSet.getString("DATE_INSTALLED");
 
                 JSONObject equipment = new JSONObject();
-                equipment.put("ID", equipment_id);
+                equipment.put("ITEM_ID", equipment_id);
                 equipment.put("EQUIPMENT_FUNCTION", function);
                 equipment.put("WEIGHT", weight);
                 equipment.put("EQUIPMENT_SIZE", size);
@@ -760,7 +795,7 @@ public class AquariumManagementDB {
                 String size = resultSet.getString("EQUIPMENT_SIZE");
                 String date_installed = resultSet.getString("DATE_INSTALLED");
 
-                equipment.put("ID", equipment_id);
+                equipment.put("ITEM_ID", equipment_id);
                 equipment.put("EQUIPMENT_FUNCTION", function);
                 equipment.put("WEIGHT", weight);
                 equipment.put("EQUIPMENT_SIZE", size);
@@ -784,27 +819,6 @@ public class AquariumManagementDB {
             return null;
         }
         return equipment;
-    }
-
-
-    private static void ItemHelper(int id, String name, int quantity, String unit, String sql1, String sql2) throws SQLException {
-        PreparedStatement preparedStatement1 = connection.prepareStatement(sql1);
-        PreparedStatement preparedStatement2 = connection.prepareStatement(sql2);
-
-        // query argument setting for statement 1
-        preparedStatement1.setInt(1, id);
-        preparedStatement1.setString(2, name);
-        preparedStatement1.setInt(3, quantity);
-
-        // query argument setting for statement 2
-        preparedStatement2.setString(1, name);
-        preparedStatement2.setString(2, unit);
-
-        preparedStatement1.executeUpdate();
-        preparedStatement2.executeUpdate();
-
-        preparedStatement1.close();
-        preparedStatement2.close();
     }
 
     // THIS COVERS THE ENTITIES WATERTANK (WATERTANKLOGISTICS AND WATERTANKPH) AND RELATION MAINTAINS (SEPARATE ENTITY) AND PARTOF
@@ -859,8 +873,6 @@ public class AquariumManagementDB {
         String getWaterTankTempSql = "SELECT TEMPERATURE FROM WATERTANKLOGISTICS WHERE ID = ?";
         String deleteWaterTankLogisticsSql = "DELETE FROM WATERTANKLOGISTICS WHERE ID = ?";
         String deleteWaterTankpHSql = "DELETE FROM WATERTANKPH WHERE TEMPERATURE = ?";
-        String maintainWaterTankSql = "DELETE FROM AQUARIST_MAINTAIN_WATERTANK WHERE WATER_TANK_ID = ?";
-        String installedSql = "DELETE FROM INSTALLED WHERE WATER_TANK_ID = ?";
 
         try (PreparedStatement getWaterTankTempStatement = connection.prepareStatement(getWaterTankTempSql)) {
             getWaterTankTempStatement.setInt(1, id);
@@ -872,19 +884,13 @@ public class AquariumManagementDB {
                     waterTankTemperature = resultSet.getFloat("TEMPERATURE");
 
                     try (PreparedStatement deleteQuantityStatement = connection.prepareStatement(deleteWaterTankLogisticsSql);
-                         PreparedStatement deleteUnitStatement = connection.prepareStatement(deleteWaterTankpHSql);
-                         PreparedStatement deleteMaintainStatement = connection.prepareStatement(maintainWaterTankSql);
-                         PreparedStatement installedStatement = connection.prepareStatement(installedSql)) {
+                         PreparedStatement deleteUnitStatement = connection.prepareStatement(deleteWaterTankpHSql)) {
 
                         deleteQuantityStatement.setInt(1, id);
                         deleteUnitStatement.setFloat(1, waterTankTemperature);
-                        deleteMaintainStatement.setInt(1, id);
-                        installedStatement.setInt(1, id);
 
                         deleteQuantityStatement.executeUpdate();
                         deleteUnitStatement.executeUpdate();
-                        deleteMaintainStatement.executeUpdate();
-                        installedStatement.executeUpdate();
                     }
 
                     System.out.println("Data from WATERTANK was deleted properly");
@@ -1005,10 +1011,10 @@ public class AquariumManagementDB {
 
                 JSONObject waterTank = new JSONObject();
                 waterTank.put("ID", id);
-                waterTank.put("NAME", name);
+                waterTank.put("WATER_TANK_LOGISTICS_NAME", name);
                 waterTank.put("TEMPERATURE", temperature);
                 waterTank.put("PH", pH);
-                waterTank.put("LIGHTING_LEVEL", lighting_level);
+                waterTank.put("LIGHTINGLEVEL", lighting_level);
                 waterTank.put("EXHIBIT_ID", exhibit_id);
                 waterTank.put("AQUARIST_ID", aquarist_id);
 
@@ -1017,7 +1023,7 @@ public class AquariumManagementDB {
 
                 System.out.println("ID: " + id + ", NAME: " + name + ", VOLUME: " + volume + ", TEMPERATURE: " + temperature +
                         ", PH: " + pH + ", LIGHTINGLEVEL: " + lighting_level + ", EXHIBIT_ID: " + exhibit_id
-                + " , AQUARIST_ID: " + aquarist_id);
+                        + " , AQUARIST_ID: " + aquarist_id);
             }
 
             resultSet.close();
@@ -1059,11 +1065,11 @@ public class AquariumManagementDB {
                 int aquarist_id = resultSet.getInt("AQUARIST_ID");
 
                 waterTank.put("ID", animal_id);
-                waterTank.put("NAME", name);
+                waterTank.put("WATER_TANK_LOGISTICS_NAME", name);
                 waterTank.put("VOLUME", volume);
                 waterTank.put("TEMPERATURE", temperature);
                 waterTank.put("PH", pH);
-                waterTank.put("LIGHTING_LEVEL", lighting_level);
+                waterTank.put("LIGHTINGLEVEL", lighting_level);
                 waterTank.put("EXHIBIT_ID", exhibit_id);
                 waterTank.put("AQUARIST_ID", aquarist_id);
 
@@ -1085,6 +1091,130 @@ public class AquariumManagementDB {
             return null;
         }
         return waterTank;
+    }
+
+    // SELECT METHOD
+    public JSONArray selectWaterTank(JSONObject waterTankConditions) {
+        // construct SELECT query
+        StringBuilder sql = new StringBuilder("SELECT wl.ID, wl.WATER_TANK_LOGISTICS_NAME, wl.VOLUME, wl.TEMPERATURE, wp.PH, wl.LIGHTINGLEVEL, wl.EXHIBIT_ID, m.AQUARIST_ID " +
+                "FROM WATERTANKLOGISTICS wl " +
+                "JOIN WATERTANKPH wp ON wl.TEMPERATURE = wp.TEMPERATURE");
+
+        // Check if conditions are provided
+        if (waterTankConditions != null && waterTankConditions.has("Selection")) {
+            JSONArray selectionArray = waterTankConditions.getJSONArray("Selection");
+
+            // create an array for AND conditions and OR conditions
+            JSONArray andCondArray = new JSONArray();
+            JSONArray orCondArray = new JSONArray();
+
+            for (int i = 0; i < selectionArray.length(); i++) {
+                JSONObject condition = selectionArray.getJSONObject(i);
+                if ("And".equalsIgnoreCase(condition.getString("Condition"))) {
+                    andCondArray.put(condition);
+                } else if ("Or".equalsIgnoreCase(condition.getString("Condition"))) {
+                    orCondArray.put(condition);
+                }
+            }
+
+            // Add AND conditions
+            if (!andCondArray.isEmpty()) {
+                sql.append(" WHERE (");
+                for (int i = 0; i < andCondArray.length(); i++) {
+                    JSONObject cond = andCondArray.getJSONObject(i);
+                    if (i > 0) {
+                        sql.append(" AND ");
+                    }
+                    sql.append("(")
+                            .append(cond.getString("Field"))
+                            .append(" ")
+                            .append(cond.getString("Comparison"))
+                            .append(" ?)");
+                }
+                sql.append(")");
+            }
+
+            // Add OR conditions
+            if (!orCondArray.isEmpty()) {
+                if (!andCondArray.isEmpty()) {
+                    sql.append(" AND ");
+                } else {
+                    sql.append(" WHERE ");
+                }
+                sql.append("(");
+                for (int i = 0; i < orCondArray.length(); i++) {
+                    JSONObject cond = orCondArray.getJSONObject(i);
+                    if (i > 0) {
+                        sql.append(" OR ");
+                    }
+                    sql.append("(")
+                            .append(cond.getString("Field"))
+                            .append(" ")
+                            .append(cond.getString("Comparison"))
+                            .append(" ?)");
+                }
+                sql.append(")");
+            }
+        }
+
+        JSONArray waterTankArray = new JSONArray();
+
+        try (PreparedStatement statement = connection.prepareStatement(sql.toString())) {
+            // Set parameter values based on the JSONObject
+            if (waterTankConditions != null && waterTankConditions.has("Selection")) {
+                JSONArray selectionArray = waterTankConditions.getJSONArray("Selection");
+                int parameterIndex = 1;
+                for (int i = 0; i < selectionArray.length(); i++) {
+                    JSONObject condition = selectionArray.getJSONObject(i);
+                    statement.setObject(parameterIndex, condition.getString("Value"));
+                    parameterIndex += 1;
+                }
+            }
+
+            ResultSet resultSet = statement.executeQuery();
+
+            while (resultSet.next()) {
+                int water_tank_id = resultSet.getInt("ID");
+                String name = resultSet.getString("WATER_TANK_LOGISTICS_NAME");
+                float volume = resultSet.getFloat("VOLUME");
+                float temperature = resultSet.getFloat("TEMPERATURE");
+                float pH = resultSet.getFloat("PH");
+                String lighting_level = resultSet.getString("LIGHTINGLEVEL");
+                int exhibit_id = resultSet.getInt("EXHIBIT_ID");
+                int aquarist_id = resultSet.getInt("AQUARIST_ID");
+
+                JSONObject waterTank = new JSONObject();
+
+                waterTank.put("ID", water_tank_id);
+                waterTank.put("WATER_TANK_LOGISTICS_NAME", name);
+                waterTank.put("VOLUME", volume);
+                waterTank.put("TEMPERATURE", temperature);
+                waterTank.put("PH", pH);
+                waterTank.put("LIGHTINGLEVEL", lighting_level);
+                waterTank.put("EXHIBIT_ID", exhibit_id);
+                waterTank.put("AQUARIST_ID", aquarist_id);
+
+                waterTankArray.put(waterTank);
+
+                System.out.println("ID: " + water_tank_id + ", NAME: " + name + ", VOLUME: " + volume + ", TEMPERATURE: " + temperature +
+                        ", PH: " + pH + ", LIGHTINGLEVEL: " + lighting_level + ", EXHIBIT_ID: " + exhibit_id
+                        + " , AQUARIST_ID: " + aquarist_id);
+
+                }
+
+                resultSet.close();
+
+                System.out.println("Data from WATERTANK was listed successfully");
+
+            } catch (SQLException e) {
+                System.out.println("Data from WATERTANK was not listed properly");
+            }
+
+            if (waterTankArray.isEmpty()) {
+                return null;
+            }
+            return waterTankArray;
+
     }
 
     // COVERS ENTITIES ANIMAL, FEED, EXHIBIT AND CLEAN (NEED TO FINISH CLEAN AND FEED)
@@ -1165,11 +1295,11 @@ public class AquariumManagementDB {
 
             preparedStatement.close();
 
-            System.out.println("Data in ANIMAL inserted successfully.");
+            System.out.println("Data in EXHIBIT inserted successfully.");
             return true;
 
         } catch (SQLException e) {
-            System.out.println("Data in ANIMAL was not inserted properly");
+            System.out.println("Data in EXHIBIT was not inserted properly");
             rollbackConnection();
             return false;
         }
@@ -1235,6 +1365,10 @@ public class AquariumManagementDB {
         }
     }
 
+    public JSONArray GroupByAnimal() {
+        return null;
+    }
+
     public boolean updateExhibit(int id, String name, String status) {
         String sql = "UPDATE EXHIBIT SET EXHIBIT_STATUS = ?, EXHIBIT_STATUS = ? WHERE ID = ?";
 
@@ -1264,6 +1398,7 @@ public class AquariumManagementDB {
 
     // DISCUSS HOW TO ADD THIS (WITH SHARON AND CHRIS) - MAKE SEPARATE METHOD OR DO IT WITHIN ENTITIES
     // MAKES MORE SENSE TO DO IT WITHIN ENTITIES
+    // NOT NEEDED REALLY
     public boolean deleteFeed(int food_id, int animal_id, int aquarist_id) {
         return false;
     }
@@ -1271,22 +1406,17 @@ public class AquariumManagementDB {
     // DELETES FROM ANIMAL AND FEED (SINCE ANIMAL HAS TOTAL PARTICIPATION - DISCUSS)
     public boolean deleteAnimal(int id) {
         String sql = "DELETE FROM ANIMAL WHERE ID = ?";
-        String sql2 = "DELETE FROM FEED WHERE ANIMAL_ID = ?";
 
         try {
             PreparedStatement preparedStatement = connection.prepareStatement(sql);
-            PreparedStatement preparedStatement2 = connection.prepareStatement(sql2);
 
             preparedStatement.setInt(1, id);
-            preparedStatement2.setInt(1, id);
 
             preparedStatement.executeUpdate();
-            preparedStatement2.executeUpdate();
 
             connection.commit();
 
             preparedStatement.close();
-            preparedStatement2.close();
 
             System.out.println("Data deleted successfully.");
             return true;
@@ -1301,22 +1431,17 @@ public class AquariumManagementDB {
     // DELETES FROM EXHIBIT AND CLEAN
     public boolean deleteExhibit(int id) {
         String sql = "DELETE FROM EXHIBIT WHERE ID = ?";
-        String sql2 = "DELETE FROM CUSTODIAN_CLEAN_EXHIBIT_TABLE WHERE EXHIBIT_ID = ?";
 
         try {
             PreparedStatement preparedStatement = connection.prepareStatement(sql);
-            PreparedStatement preparedStatement2 = connection.prepareStatement(sql2);
 
             preparedStatement.setInt(1, id);
-            preparedStatement2.setInt(1, id);
 
             preparedStatement.executeUpdate();
-            preparedStatement2.executeUpdate();
 
             connection.commit();
 
             preparedStatement.close();
-            preparedStatement2.close();
 
             System.out.println("Data deleted successfully.");
             return true;
@@ -1366,10 +1491,10 @@ public class AquariumManagementDB {
 
             animalResult.close();
 
-            System.out.println("Data from EXHIBIT was listed successfully");
+            System.out.println("Data from ANIMAL was listed successfully");
 
         } catch (SQLException e) {
-            System.out.println("Data from EXHIBIT was not listed properly");
+            System.out.println("Data from ANIMAL was not listed properly");
         }
 
         if (animalArray.isEmpty()) {
@@ -1620,142 +1745,643 @@ public class AquariumManagementDB {
     }
 
     // FOR STAFF TABLE:
-    public boolean insertStaff(int id, float salary, String staff_name, String datehired) {
-        System.out.println("Inside Insert Staff");
+    public boolean insertStaff(int id, BigDecimal salary, String staffName, Date dateHired) {
+        String sql = "INSERT INTO Staff (id, salary, staff_name, datehired) VALUES (?, ?, ?, ?)";
 
-        String sql = "INSERT INTO Staff (ID, SALARY, STAFF_NAME, DATEHIRED) VALUES (?, ?, ?, ?)";
         try {
-            StaffHelper(id, salary, staff_name, datehired, sql);
-            System.out.println("Data inserted successfully.");
+            PreparedStatement preparedStatement = connection.prepareStatement(sql);
+            preparedStatement.setInt(1, id);
+            preparedStatement.setBigDecimal(2, salary);
+            preparedStatement.setString(3, staffName);
+            preparedStatement.setDate(4, dateHired);
+            preparedStatement.executeUpdate();
+            connection.commit();
+            preparedStatement.close();
+            System.out.println("Data from STAFF inserted successfully.");
             return true;
         } catch (SQLException e) {
-            System.out.println("Data was not inserted properly: " + e.getMessage());
+            System.out.println("Data from STAFF was not inserted properly.");
+            rollbackConnection();
             return false;
         }
     }
 
-    public boolean updateStaff(int id, float salary, String staff_name, String datehired) {
-        String sql = "UPDATE STAFF SET SALARY = ?, STAFF_NAME = ?, DATEHIRED = ? WHERE ID = ?";
+    private boolean staffMemberExistsInAnySubtype(int id) {
+        String sqlAquarist = "SELECT COUNT(*) FROM Aquarist WHERE id = ?";
+        String sqlCustodian = "SELECT COUNT(*) FROM Custodian WHERE id = ?";
+        String sqlVeterinarian = "SELECT COUNT(*) FROM Veterinarian WHERE id = ?";
 
         try {
-            int rowsAffected = StaffHelper(id, salary, staff_name, datehired, sql);
-            if (rowsAffected > 0) {
-                System.out.println("Data updated successfully.");
+            // Check Aquarist
+            PreparedStatement preparedStatement = connection.prepareStatement(sqlAquarist);
+            preparedStatement.setInt(1, id);
+            ResultSet resultSet = preparedStatement.executeQuery();
+            if (resultSet.next() && resultSet.getInt(1) > 0) {
                 return true;
-            } else {
-                System.out.println("ID not found, no data updated.");
-                return false; // Or throw an exception if that's your preferred behavior
             }
+            preparedStatement.close();
+
+            // Check Custodian
+            preparedStatement = connection.prepareStatement(sqlCustodian);
+            preparedStatement.setInt(1, id);
+            resultSet = preparedStatement.executeQuery();
+            if (resultSet.next() && resultSet.getInt(1) > 0) {
+                return true;
+            }
+            preparedStatement.close();
+
+            // Check Veterinarian
+            preparedStatement = connection.prepareStatement(sqlVeterinarian);
+            preparedStatement.setInt(1, id);
+            resultSet = preparedStatement.executeQuery();
+            if (resultSet.next() && resultSet.getInt(1) > 0) {
+                return true;
+            }
+            preparedStatement.close();
+
+            return false;
         } catch (SQLException e) {
-            System.out.println("Data was not updated properly: " + e.getMessage());
+            System.out.println("Error checking for staff member in subtypes: " + e.getMessage());
+            rollbackConnection();
+            return true;
+        }
+    }
+
+    // This method will insert a new staff member and an aquarist.
+    public boolean insertAquarist(int id, BigDecimal divingLevel, int waterTankId) {
+        if (staffMemberExistsInAnySubtype(id)) {
+            System.out.println("Staff member with ID " + id + " already exists in a subtype.");
+            rollbackConnection();
+            return false;
+        }
+
+        String sql = "INSERT INTO Aquarist (id, diving_level, water_tank_id) VALUES (?, ?, ?)";
+
+        try {
+            PreparedStatement preparedStatement = connection.prepareStatement(sql);
+            preparedStatement.setInt(1, id);
+            preparedStatement.setBigDecimal(2, divingLevel);
+            preparedStatement.setInt(3, waterTankId);
+            preparedStatement.executeUpdate();
+            connection.commit();
+            preparedStatement.close();
+            System.out.println("Data from AQUARIST inserted successfully.");
+            return true;
+        } catch (SQLException e) {
+            System.out.println("Data from AQUARIST was not inserted properly.");
+            rollbackConnection();
             return false;
         }
     }
 
+    public boolean insertCustodian(int id, int exhibitId) {
+        if (staffMemberExistsInAnySubtype(id)) {
+            System.out.println("Staff member with ID " + id + " already exists in a subtype.");
+            rollbackConnection();
+            return false;
+        }
+
+        String sql = "INSERT INTO Custodian (id, exhibit_id) VALUES (?, ?)";
+
+        try {
+            PreparedStatement preparedStatement = connection.prepareStatement(sql);
+            preparedStatement.setInt(1, id);
+            preparedStatement.setInt(2, exhibitId);
+            preparedStatement.executeUpdate();
+            connection.commit();
+            preparedStatement.close();
+            System.out.println("Data from CUSTODIAN inserted successfully.");
+            return true;
+        } catch (SQLException e) {
+            System.out.println("Data from CUSTODIAN was not inserted properly.");
+            rollbackConnection();
+            return false;
+        }
+    }
+
+    public boolean insertVeterinarian(int id) {
+        if (staffMemberExistsInAnySubtype(id)) {
+            System.out.println("Staff member with ID " + id + " already exists in a subtype.");
+            rollbackConnection();
+            return false;
+        }
+
+        String sql = "INSERT INTO Veterinarian (id) VALUES (?)";
+
+        try {
+            PreparedStatement preparedStatement = connection.prepareStatement(sql);
+            preparedStatement.setInt(1, id);
+            preparedStatement.executeUpdate();
+            connection.commit();
+            preparedStatement.close();
+            System.out.println("Data from VETERINARIAN inserted successfully.");
+            return true;
+        } catch (SQLException e) {
+            System.out.println("Data from VETERINARIAN was not inserted properly.");
+            rollbackConnection();
+            return false;
+        }
+    }
+
+    public boolean updateStaff(int id, BigDecimal salary, String staffName, Date dateHired) {
+        String sql = "UPDATE Staff SET salary = ?, staff_name = ?, datehired = ? WHERE id = ?";
+
+        try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
+            preparedStatement.setBigDecimal(1, salary);
+            preparedStatement.setString(2, staffName);
+            preparedStatement.setDate(3, dateHired);
+            preparedStatement.setInt(4, id);
+
+            int affectedRows = preparedStatement.executeUpdate();
+            connection.commit();
+
+            if (affectedRows > 0) {
+                System.out.println("Staff updated successfully.");
+                return true;
+            } else {
+                System.out.println("No Staff found with ID " + id);
+                return false;
+            }
+        } catch (SQLException e) {
+            System.out.println("Staff update failed: " + e.getMessage());
+            rollbackConnection();
+            return false;
+        }
+    }
+
+    public boolean updateAquarist(int id, BigDecimal divingLevel, Integer waterTankId) {
+        String sql = "UPDATE Aquarist SET diving_level = ?, water_tank_id = ? WHERE id = ?";
+
+        try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
+            preparedStatement.setBigDecimal(1, divingLevel);
+            preparedStatement.setInt(2, waterTankId);
+            preparedStatement.setInt(3, id);
+
+            int affectedRows = preparedStatement.executeUpdate();
+            connection.commit();
+
+            if (affectedRows > 0) {
+                System.out.println("Aquarist updated successfully.");
+                return true;
+            } else {
+                System.out.println("No Aquarist found with ID " + id);
+                return false;
+            }
+        } catch (SQLException e) {
+            System.out.println("Aquarist update failed: " + e.getMessage());
+            rollbackConnection();
+            return false;
+        }
+    }
+
+    public boolean updateCustodian(int id, int exhibitId) {
+        String sql = "UPDATE Custodian SET exhibit_id = ? WHERE id = ?";
+
+        try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
+            preparedStatement.setInt(1, exhibitId);
+            preparedStatement.setInt(2, id);
+
+            int affectedRows = preparedStatement.executeUpdate();
+            connection.commit();
+
+            if (affectedRows > 0) {
+                System.out.println("Custodian updated successfully.");
+                return true;
+            } else {
+                System.out.println("No Custodian found with ID " + id);
+                return false;
+            }
+        } catch (SQLException e) {
+            System.out.println("Custodian update failed: " + e.getMessage());
+            rollbackConnection();
+            return false;
+        }
+    }
+
+    public boolean updateVeterinarian(int id) {
+
+        // Check if the Veterinarian exists in the Veterinarian table
+        String checkSql = "SELECT COUNT(*) FROM Veterinarian WHERE id = ?";
+        try (PreparedStatement checkStatement = connection.prepareStatement(checkSql)) {
+            checkStatement.setInt(1, id);
+            try (ResultSet resultSet = checkStatement.executeQuery()) {
+                if (resultSet.next() && resultSet.getInt(1) == 0) {
+                    System.out.println("No Veterinarian found with ID " + id);
+                    return false;
+                }
+            }
+        } catch (SQLException e) {
+            System.out.println("Veterinarian check failed: " + e.getMessage());
+            rollbackConnection();
+            return false;
+        }
+
+        System.out.println("Veterinarian updated successfully (no attributes to update).");
+        return true;
+    }
 
     public boolean deleteStaff(int id) {
-        String sql = "DELETE FROM STAFF WHERE ID = ?";
+        String sql = "DELETE FROM Staff WHERE id = ?";
 
         try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
             preparedStatement.setInt(1, id);
 
-            int rowsAffected = preparedStatement.executeUpdate();
-            if (rowsAffected > 0) {
-                System.out.println("Staff entry deleted successfully.");
+            int affectedRows = preparedStatement.executeUpdate();
+            connection.commit();
+
+            if (affectedRows > 0) {
+                System.out.println("Staff member deleted successfully.");
                 return true;
             } else {
-                System.out.println("No such entry exists.");
+                System.out.println("No Staff member found with ID " + id);
                 return false;
             }
-
         } catch (SQLException e) {
-            System.out.println("Error during deletion: " + e.getMessage());
+            System.out.println("Staff deletion failed: " + e.getMessage());
+            rollbackConnection();
             return false;
         }
     }
 
-
-    private static int StaffHelper(int id, float salary, String staff_name, String date_hired, String sql)
-            throws SQLException {
-        PreparedStatement preparedStatement = connection.prepareStatement(sql);
-
-        // The order of parameters here is incorrect based on your SQL statement.
-        // It should match the order in which they appear in the SQL query.
-        preparedStatement.setFloat(1, salary);
-        preparedStatement.setString(2, staff_name);
-        preparedStatement.setString(3, date_hired);
-        preparedStatement.setInt(4, id);
-
-        // executeUpdate() returns the number of rows affected by the query
-        int rowsAffected = preparedStatement.executeUpdate();
-        return rowsAffected;
-    }
-
-    public String listStaff() {
-        String sql = "SELECT id, salary, staff_name, datehired FROM Staff";
-        JSONArray staffJSONArray = new JSONArray();
-
-        try (PreparedStatement preparedStatement = connection.prepareStatement(sql);
-             ResultSet resultSet = preparedStatement.executeQuery()) {
-
-            while (resultSet.next()) {
-                int id = resultSet.getInt("id");
-                float salary = resultSet.getFloat("salary");
-                String staffName = resultSet.getString("staff_name");
-                String dateHired = resultSet.getString("datehired");
-
-                JSONObject staffObject = new JSONObject();
-                staffObject.put("ID", id);
-                staffObject.put("Salary", salary);
-                staffObject.put("Staff Name", staffName);
-                staffObject.put("Date Hired", dateHired);
-
-                staffJSONArray.put(staffObject);
-
-                System.out.println("ID: " + id + ", Salary: " + salary + ", Staff Name: " + staffName + ", Date Hired: " + dateHired);
-            }
-
-            System.out.println("Staff data was listed successfully");
-
-        } catch (SQLException e) {
-            System.out.println("Staff data was not listed properly: " + e.getMessage());
-            return null;
-        }
-
-        return staffJSONArray.isEmpty() ? null : staffJSONArray.toString();
-    }
-
-    public String getStaffByID(int staffId) {
-        String sql = "SELECT id, salary, staff_name, datehired FROM Staff WHERE id = ?";
-        JSONObject staffObject = new JSONObject();
+    public boolean deleteCustodian(int id) {
+        String sql = "DELETE FROM Custodian WHERE id = ?";
 
         try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
-            preparedStatement.setInt(1, staffId);
-            try (ResultSet resultSet = preparedStatement.executeQuery()) {
-                if (resultSet.next()) {
-                    staffObject.put("ID", resultSet.getInt("id"));
-                    staffObject.put("Salary", resultSet.getFloat("salary"));
-                    staffObject.put("Staff Name", resultSet.getString("staff_name"));
-                    staffObject.put("Date Hired", resultSet.getString("datehired"));
+            preparedStatement.setInt(1, id);
 
-                    System.out.println("ID: " + staffObject.getInt("ID") +
-                            ", Salary: " + staffObject.getFloat("Salary") +
-                            ", Staff Name: " + staffObject.getString("Staff Name") +
-                            ", Date Hired: " + staffObject.getString("Date Hired"));
-                } else {
-                    System.out.println("No staff member found with ID: " + staffId);
-                    return null;
-                }
+            int affectedRows = preparedStatement.executeUpdate();
+            connection.commit();
+
+            if (affectedRows > 0) {
+                System.out.println("Custodian deleted successfully.");
+                return true;
+            } else {
+                System.out.println("No Custodian found with ID " + id);
+                return false;
+            }
+        } catch (SQLException e) {
+            System.out.println("Custodian deletion failed: " + e.getMessage());
+            rollbackConnection();
+            return false;
+        }
+    }
+
+    public boolean deleteVeterinarian(int id) {
+        String sql = "DELETE FROM Veterinarian WHERE id = ?";
+
+        try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
+            preparedStatement.setInt(1, id);
+
+            int affectedRows = preparedStatement.executeUpdate();
+            connection.commit();
+
+            if (affectedRows > 0) {
+                System.out.println("Veterinarian deleted successfully.");
+                return true;
+            } else {
+                System.out.println("No Veterinarian found with ID " + id);
+                return false;
+            }
+        } catch (SQLException e) {
+            System.out.println("Veterinarian deletion failed: " + e.getMessage());
+            rollbackConnection();
+            return false;
+        }
+    }
+
+    public boolean deleteAquarist(int id) {
+        String sql = "DELETE FROM Aquarist WHERE id = ?";
+
+        try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
+            preparedStatement.setInt(1, id);
+
+            int affectedRows = preparedStatement.executeUpdate();
+            connection.commit();
+
+            if (affectedRows > 0) {
+                System.out.println("Aquarist deleted successfully.");
+                return true;
+            } else {
+                System.out.println("No Aquarist found with ID " + id);
+                return false;
+            }
+        } catch (SQLException e) {
+            System.out.println("Aquarist deletion failed: " + e.getMessage());
+            rollbackConnection();
+            return false;
+        }
+    }
+    public JSONArray listStaff() {
+        String sql = "SELECT ID, SALARY, STAFF_NAME, DATEHIRED FROM Staff";
+
+        JSONArray staffJSONArray = new JSONArray();
+
+        try {
+            PreparedStatement preparedStatement = connection.prepareStatement(sql);
+            ResultSet staffResult = preparedStatement.executeQuery();
+
+            while (staffResult.next()) {
+                int id = staffResult.getInt("ID");
+                BigDecimal salary = staffResult.getBigDecimal("SALARY");
+                String staffName = staffResult.getString("STAFF_NAME");
+                Date dateHired = staffResult.getDate("DATEHIRED");
+
+                JSONObject staffItem = new JSONObject();
+                staffItem.put("ID", id);
+                staffItem.put("SALARY", salary);
+                staffItem.put("STAFF_NAME", staffName);
+                staffItem.put("DATEHIRED", dateHired);
+
+                staffJSONArray.put(staffItem);
+
+                System.out.println("ID: " + id + ", Salary: " + salary +
+                        ", Staff Name: " + staffName + ", Date Hired: " + dateHired);
             }
 
-            System.out.println("Data for Staff ID " + staffId + " was retrieved successfully");
+            staffResult.close();
+
+            System.out.println("Data was listed successfully");
 
         } catch (SQLException e) {
-            System.out.println("Data for Staff ID " + staffId + " was not retrieved properly: " + e.getMessage());
-            return null;
+            System.out.println("Data was not listed properly: " + e.getMessage());
         }
 
-        return staffObject.toString();
+        return staffJSONArray.isEmpty() ? null : staffJSONArray;
+    }
+
+    public JSONArray listAquarists() {
+        String sql = "SELECT ID, DIVING_LEVEL, WATER_TANK_ID FROM Aquarist";
+
+        JSONArray aquaristsJSONArray = new JSONArray();
+
+        try {
+            PreparedStatement preparedStatement = connection.prepareStatement(sql);
+            ResultSet aquaristResult = preparedStatement.executeQuery();
+
+            while (aquaristResult.next()) {
+                int id = aquaristResult.getInt("ID");
+                BigDecimal divingLevel = aquaristResult.getBigDecimal("DIVING_LEVEL");
+                int waterTankId = aquaristResult.getInt("WATER_TANK_ID");
+
+                JSONObject aquaristItem = new JSONObject();
+                aquaristItem.put("ID", id);
+                aquaristItem.put("DIVING_LEVEL", divingLevel);
+                aquaristItem.put("WATER_TANK_ID", waterTankId);
+
+                aquaristsJSONArray.put(aquaristItem);
+
+                System.out.println("ID: " + id + ", Diving Level: " + divingLevel +
+                        ", Water Tank ID: " + waterTankId);
+            }
+
+            aquaristResult.close();
+
+            System.out.println("Data was listed successfully");
+
+        } catch (SQLException e) {
+            System.out.println("Data was not listed properly: " + e.getMessage());
+        }
+
+        return aquaristsJSONArray.isEmpty() ? null : aquaristsJSONArray;
+    }
+
+    public JSONArray listCustodians() {
+        String sql = "SELECT ID, EXHIBIT_ID FROM Custodian";
+
+        JSONArray custodiansJSONArray = new JSONArray();
+
+        try {
+            PreparedStatement preparedStatement = connection.prepareStatement(sql);
+            ResultSet custodianResult = preparedStatement.executeQuery();
+
+            while (custodianResult.next()) {
+                int id = custodianResult.getInt("ID");
+                int exhibitId = custodianResult.getInt("EXHIBIT_ID");
+
+                JSONObject custodianItem = new JSONObject();
+                custodianItem.put("ID", id);
+                custodianItem.put("EXHIBIT_ID", exhibitId);
+
+                custodiansJSONArray.put(custodianItem);
+
+                System.out.println("ID: " + id + ", Exhibit ID: " + exhibitId);
+            }
+
+            custodianResult.close();
+
+            System.out.println("Data was listed successfully");
+
+        } catch (SQLException e) {
+            System.out.println("Data was not listed properly: " + e.getMessage());
+        }
+
+        return custodiansJSONArray.isEmpty() ? null : custodiansJSONArray;
+    }
+
+    public JSONArray listVeterinarians() {
+        String sql = "SELECT ID FROM Veterinarian";
+
+        JSONArray veterinariansJSONArray = new JSONArray();
+
+        try {
+            PreparedStatement preparedStatement = connection.prepareStatement(sql);
+            ResultSet veterinarianResult = preparedStatement.executeQuery();
+
+            while (veterinarianResult.next()) {
+                int id = veterinarianResult.getInt("ID");
+
+                JSONObject veterinarianItem = new JSONObject();
+                veterinarianItem.put("ID", id);
+
+                veterinariansJSONArray.put(veterinarianItem);
+
+                System.out.println("ID: " + id);
+            }
+
+            veterinarianResult.close();
+
+            System.out.println("Data was listed successfully");
+
+        } catch (SQLException e) {
+            System.out.println("Data was not listed properly: " + e.getMessage());
+        }
+
+        return veterinariansJSONArray.isEmpty() ? null : veterinariansJSONArray;
+    }
+
+
+    public JSONObject getStaffByID(int id) {
+        String sql = "SELECT ID, SALARY, STAFF_NAME, DATEHIRED FROM Staff WHERE ID = ?";
+
+        JSONObject staff = new JSONObject();
+
+        try {
+            PreparedStatement preparedStatement = connection.prepareStatement(sql);
+            preparedStatement.setInt(1, id);
+            ResultSet resultSet = preparedStatement.executeQuery();
+
+            if (resultSet.next()) {
+                staff.put("ID", resultSet.getInt("ID"));
+                staff.put("SALARY", resultSet.getBigDecimal("SALARY"));
+                staff.put("STAFF_NAME", resultSet.getString("STAFF_NAME"));
+                staff.put("DATEHIRED", resultSet.getDate("DATEHIRED"));
+            }
+
+            resultSet.close();
+
+        } catch (SQLException e) {
+            System.out.println("Data FROM STAFF was not retrieved properly");
+        }
+
+        return staff.isEmpty() ? null : staff;
+    }
+
+    public JSONObject getCustodianByID(int id) {
+        String sql = "SELECT ID, EXHIBIT_ID FROM Custodian WHERE ID = ?";
+
+        JSONObject custodian = new JSONObject();
+
+        try {
+            PreparedStatement preparedStatement = connection.prepareStatement(sql);
+            preparedStatement.setInt(1, id);
+            ResultSet resultSet = preparedStatement.executeQuery();
+
+            if (resultSet.next()) {
+                custodian.put("ID", resultSet.getInt("ID"));
+                custodian.put("EXHIBIT_ID", resultSet.getInt("EXHIBIT_ID"));
+            }
+
+            resultSet.close();
+
+        } catch (SQLException e) {
+            System.out.println("Data FROM CUSTODIAN was not retrieved properly");
+        }
+
+        return custodian.isEmpty() ? null : custodian;
+    }
+
+    public JSONObject getAquaristByID(int id) {
+        String sql = "SELECT ID, DIVING_LEVEL, WATER_TANK_ID FROM Aquarist WHERE ID = ?";
+
+        JSONObject aquarist = new JSONObject();
+
+        try {
+            PreparedStatement preparedStatement = connection.prepareStatement(sql);
+            preparedStatement.setInt(1, id);
+            ResultSet resultSet = preparedStatement.executeQuery();
+
+            if (resultSet.next()) {
+                aquarist.put("ID", resultSet.getInt("ID"));
+                aquarist.put("DIVING_LEVEL", resultSet.getBigDecimal("DIVING_LEVEL"));
+                aquarist.put("WATER_TANK_ID", resultSet.getInt("WATER_TANK_ID"));
+            }
+
+            resultSet.close();
+
+        } catch (SQLException e) {
+            System.out.println("Data FROM AQUARIST was not retrieved properly");
+        }
+
+        return aquarist.isEmpty() ? null : aquarist;
+    }
+
+    public JSONObject getVeterinarianByID(int id) {
+        String sql = "SELECT ID FROM Veterinarian WHERE ID = ?";
+
+        JSONObject veterinarian = new JSONObject();
+
+        try {
+            PreparedStatement preparedStatement = connection.prepareStatement(sql);
+            preparedStatement.setInt(1, id);
+            ResultSet resultSet = preparedStatement.executeQuery();
+
+            if (resultSet.next()) {
+                veterinarian.put("ID", resultSet.getInt("ID"));
+            }
+
+            resultSet.close();
+
+        } catch (SQLException e) {
+            System.out.println("Data FROM VETERINARIAN was not retrieved properly");
+        }
+
+        return veterinarian.isEmpty() ? null : veterinarian;
+    }
+
+    // Citation: Studied: https://www.freecodecamp.org/news/sql-having-how-to-group-and-count-with-a-having-statement/
+    // #:~:text=In%20SQL%2C%20you%20use%20the,when%20used%20with%20aggregate%20functions.
+
+    // FUNCTION FOR "Queries: Aggregation with Having"
+    public JSONArray getSalariesWithHighEarningStaffCounts(BigDecimal salaryThreshold) {
+        String sql = "SELECT SALARY, COUNT(*) AS StaffCount " +
+                "FROM Staff " +
+                "GROUP BY SALARY " +
+                "HAVING SALARY > ?";
+
+        JSONArray salariesArray = new JSONArray();
+
+        try {
+            PreparedStatement preparedStatement = connection.prepareStatement(sql);
+            preparedStatement.setBigDecimal(1, salaryThreshold);
+            ResultSet resultSet = preparedStatement.executeQuery();
+
+            while (resultSet.next()) {
+                BigDecimal salary = resultSet.getBigDecimal("SALARY");
+                int count = resultSet.getInt("StaffCount");
+
+                JSONObject salaryInfo = new JSONObject();
+                salaryInfo.put("SALARY", salary);
+                salaryInfo.put("StaffCount", count);
+
+                salariesArray.put(salaryInfo);
+            }
+
+            resultSet.close();
+
+        } catch (SQLException e) {
+            System.out.println("Query failed: " + e.getMessage());
+        }
+
+        return salariesArray.isEmpty() ? null : salariesArray;
+    }
+
+    // Citation: Studied:https://www.geeksforgeeks.org/sql-division/
+    // FUNCTION FOR "Queries: Division"
+    public JSONArray getVeterinariansWhoWorkedWithAllOfSpecificSpecies(String species) {
+        String sql = "SELECT v.ID " +
+                "FROM VETERINARIAN v " +
+                "WHERE NOT EXISTS (" +
+                "SELECT a.ID " +
+                "FROM ANIMAL a " +
+                "WHERE a.SPECIES = ? " +
+                "AND NOT EXISTS (" +
+                "SELECT * " +
+                "FROM ANIMAL a2 " +
+                "WHERE a2.VETERINARIAN_ID = v.ID AND a2.SPECIES = ?" +
+                "))";
+
+        JSONArray veterinariansJSONArray = new JSONArray();
+
+        try {
+            PreparedStatement preparedStatement = connection.prepareStatement(sql);
+            preparedStatement.setString(1, species);
+            preparedStatement.setString(2, species);
+            ResultSet resultSet = preparedStatement.executeQuery();
+
+            while (resultSet.next()) {
+                JSONObject veterinarian = new JSONObject();
+                veterinarian.put("ID", resultSet.getInt("ID"));
+
+                veterinariansJSONArray.put(veterinarian);
+            }
+
+            resultSet.close();
+
+        } catch (SQLException e) {
+            System.out.println("Query failed: " + e.getMessage());
+        }
+
+        return veterinariansJSONArray;
     }
 
 
@@ -1830,26 +2456,27 @@ public class AquariumManagementDB {
             return false;
         }
     }
+
     public JSONArray listPlants() {
-        String sql = "SELECT plant_id, species, living_temp, living_light, water_tank_id FROM Grown_In_Plant";
+        String sql = "SELECT PLANT_ID, SPECIES, LIVING_TEMP, LIVING_LIGHT, WATER_TANK_ID FROM Grown_In_Plant";
         JSONArray plantsJSONArray = new JSONArray();
 
         try (PreparedStatement preparedStatement = connection.prepareStatement(sql);
              ResultSet resultSet = preparedStatement.executeQuery()) {
 
             while (resultSet.next()) {
-                int plantId = resultSet.getInt("plant_id");
-                String species = resultSet.getString("species");
-                float livingTemp = resultSet.getFloat("living_temp");
-                float livingLight = resultSet.getFloat("living_light");
-                int waterTankId = resultSet.getInt("water_tank_id");
+                int plantId = resultSet.getInt("PLANT_ID");
+                String species = resultSet.getString("SPECIES");
+                float livingTemp = resultSet.getFloat("LIVING_TEMP");
+                float livingLight = resultSet.getFloat("LIVING_LIGHT");
+                int waterTankId = resultSet.getInt("WATER_TANK_ID");
 
                 JSONObject plantObject = new JSONObject();
-                plantObject.put("Plant ID", plantId);
-                plantObject.put("Species", species);
-                plantObject.put("Living Temp", livingTemp);
-                plantObject.put("Living Light", livingLight);
-                plantObject.put("Water Tank ID", waterTankId);
+                plantObject.put("PLANT_ID", plantId);
+                plantObject.put("SPECIES", species);
+                plantObject.put("LIVING_TEMP", livingTemp);
+                plantObject.put("LIVING_LIGHT", livingLight);
+                plantObject.put("WATER_TANK_ID", waterTankId);
 
                 plantsJSONArray.put(plantObject);
 
@@ -1868,25 +2495,26 @@ public class AquariumManagementDB {
         return plantsJSONArray.isEmpty() ? null : plantsJSONArray;
     }
 
+
     public JSONObject getPlantByID(int plantId) {
-        String sql = "SELECT plant_id, species, living_temp, living_light, water_tank_id FROM Grown_In_Plant WHERE plant_id = ?";
+        String sql = "SELECT PLANT_ID, SPECIES, LIVING_TEMP, LIVING_LIGHT, WATER_TANK_ID FROM Grown_In_Plant WHERE PLANT_ID = ?";
         JSONObject plantObject = new JSONObject();
 
         try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
             preparedStatement.setInt(1, plantId);
             try (ResultSet resultSet = preparedStatement.executeQuery()) {
                 if (resultSet.next()) {
-                    plantObject.put("Plant_ID", resultSet.getInt("plant_id"));
-                    plantObject.put("Species", resultSet.getString("species"));
-                    plantObject.put("Living_Temp", resultSet.getFloat("living_temp"));
-                    plantObject.put("Living_Light", resultSet.getFloat("living_light"));
-                    plantObject.put("Water_Tank_ID", resultSet.getInt("water_tank_id"));
+                    plantObject.put("PLANT_ID", resultSet.getInt("PLANT_ID"));
+                    plantObject.put("SPECIES", resultSet.getString("SPECIES"));
+                    plantObject.put("LIVING_TEMP", resultSet.getBigDecimal("LIVING_TEMP"));
+                    plantObject.put("LIVING_LIGHT", resultSet.getBigDecimal("LIVING_LIGHT"));
+                    plantObject.put("WATER_TANK_ID", resultSet.getInt("WATER_TANK_ID"));
 
                     System.out.println("Plant_ID: " + plantId +
-                            ", Species: " + plantObject.getString("Species") +
-                            ", Living Temp: " + plantObject.getFloat("Living_Temp") +
-                            ", Living Light: " + plantObject.getFloat("Living_Light") +
-                            ", Water Tank ID: " + plantObject.getInt("Water_Tank_ID"));
+                            ", Species: " + plantObject.getString("SPECIES") +
+                            ", Living Temp: " + plantObject.getBigDecimal("LIVING_TEMP") +
+                            ", Living Light: " + plantObject.getBigDecimal("LIVING_LIGHT") +
+                            ", Water Tank ID: " + plantObject.getInt("WATER_TANK_ID"));
                 } else {
                     System.out.println("No plant found with ID: " + plantId);
                     return null;
@@ -1902,7 +2530,6 @@ public class AquariumManagementDB {
 
         return plantObject;
     }
-
 
 
     public boolean insertVendor(int id, String vendorName, String marketRating, String address) {
@@ -2046,9 +2673,10 @@ public class AquariumManagementDB {
     }
 
     public JSONArray listVendors() {
-        String sql = "SELECT vl.ID, vr.vendor_name, vr.vendor_market_rating, vl.address " +
-                "FROM VendorReputation vr " +
-                "JOIN VendorLogistics vl ON vr.vendor_name = vl.vendor_logistics_name";
+        // Ensure the column names used in the SELECT statement match the actual column names in the database tables
+        String sql = "SELECT vl.ID, vl.VENDOR_LOGISTICS_NAME, vr.VENDOR_MARKET_RATING, vl.ADDRESS " +
+                "FROM VendorLogistics vl " +
+                "JOIN VendorReputation vr ON vl.VENDOR_LOGISTICS_NAME = vr.VENDOR_NAME";
         JSONArray vendorsArray = new JSONArray();
 
         try (PreparedStatement preparedStatement = connection.prepareStatement(sql);
@@ -2056,15 +2684,15 @@ public class AquariumManagementDB {
 
             while (resultSet.next()) {
                 int id = resultSet.getInt("ID");
-                String vendorName = resultSet.getString("vendor_name");
-                String marketRating = resultSet.getString("vendor_market_rating");
-                String address = resultSet.getString("address");
+                String vendorName = resultSet.getString("VENDOR_LOGISTICS_NAME");
+                String marketRating = resultSet.getString("VENDOR_MARKET_RATING");
+                String address = resultSet.getString("ADDRESS");
 
                 JSONObject vendorObject = new JSONObject();
                 vendorObject.put("ID", id);
-                vendorObject.put("Vendor Name", vendorName);
-                vendorObject.put("Market Rating", marketRating);
-                vendorObject.put("Address", address);
+                vendorObject.put("VENDOR_NAME", vendorName);
+                vendorObject.put("VENDOR_MARKET_RATING", marketRating);
+                vendorObject.put("ADDRESS", address);
 
                 vendorsArray.put(vendorObject);
 
@@ -2081,6 +2709,46 @@ public class AquariumManagementDB {
 
         return vendorsArray.isEmpty() ? null : vendorsArray;
     }
+
+    public JSONObject getVendorByID(int id) {
+        String sql = "SELECT vl.ID, vl.VENDOR_LOGISTICS_NAME, vl.ADDRESS, vr.VENDOR_MARKET_RATING " +
+                "FROM VendorLogistics vl " +
+                "JOIN VendorReputation vr ON vl.VENDOR_LOGISTICS_NAME = vr.VENDOR_NAME " +
+                "WHERE vl.ID = ?";
+        JSONObject vendorItem = new JSONObject();
+
+        try {
+            PreparedStatement preparedStatement = connection.prepareStatement(sql);
+            preparedStatement.setInt(1, id);
+            ResultSet vendorResult = preparedStatement.executeQuery();
+
+            if (vendorResult.next()) {
+                String vendorName = vendorResult.getString("VENDOR_LOGISTICS_NAME");
+                String address = vendorResult.getString("ADDRESS");
+                String marketRating = vendorResult.getString("VENDOR_MARKET_RATING");
+
+                vendorItem.put("ID", id);
+                vendorItem.put("VENDOR_NAME", vendorName);
+                vendorItem.put("ADDRESS", address);
+                vendorItem.put("VENDOR_MARKET_RATING", marketRating);
+
+                System.out.println("ID: " + id + ", Name: " + vendorName + ", Address: " + address + ", Market Rating: " + marketRating);
+            } else {
+                System.out.println("No vendor found with ID: " + id);
+            }
+
+            vendorResult.close();
+            System.out.println("Data from VENDOR was retrieved successfully");
+
+        } catch (SQLException e) {
+            System.out.println("Data from VENDOR was not retrieved properly: " + e.getMessage());
+            return null;
+        }
+
+        return vendorItem.isEmpty() ? null : vendorItem;
+    }
+
+
 
     // Source: https://github.students.cs.ubc.ca/CPSC304/CPSC304_Java_Project
     private void rollbackConnection() {
