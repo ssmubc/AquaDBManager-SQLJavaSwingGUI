@@ -120,8 +120,10 @@ public class RawDataTablePackage {
             } else {
                 JSONObject requestData = new JSONObject();
                 requestData.put("TableName", selectedTable);
-                requestData.put("Display", new JSONArray(selectedFields));
+                requestData.put("Fields", new JSONArray(selectedFields));
                 System.out.println(requestData.toString());
+                JSONArray tableData = db.getRawData(requestData);
+                System.out.println(tableData.toString());
                 fieldSelectionDialog.dispose();
             }
         });

@@ -58,7 +58,7 @@ public class AquariumManagementDB {
     public JSONArray getRawData(JSONObject relationObj) {
         JSONArray dataArray = new JSONArray();
 
-        String tableName = relationObj.getString("tableName");
+        String tableName = relationObj.getString("TableName");
         JSONArray fieldsArray = relationObj.getJSONArray("Fields");
 
         // DEFAULT: select all attributes
