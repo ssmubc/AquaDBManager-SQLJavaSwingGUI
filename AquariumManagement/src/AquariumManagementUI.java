@@ -1,7 +1,6 @@
 package AquariumManagement.src;
 
 import org.json.JSONArray;
-import org.json.JSONObject;
 
 import javax.swing.*;
 import java.awt.*;
@@ -45,9 +44,8 @@ public class AquariumManagementUI extends JFrame {
         TablePackage staffTablePkg = new TablePackage(this::showHome,"Staffs", db::listStaff);
         TablePackage animalTablePkg = new TablePackage(this::showHome,"Animals", db::listAnimal);
 
-
-
-        tankTablePkg.setAdvancedSearch(getTankFields());
+        
+        tankTablePkg.setAdvancedSearch(getTankFields(), db::selectWaterTank);
         equipTablePkg.getButtonPanel().add(equipBySizeBtn(equipTablePkg));
         animalTablePkg.getButtonPanel().add(findAnimalExpertBtn(animalTablePkg));
 
@@ -207,14 +205,50 @@ public class AquariumManagementUI extends JFrame {
     }
 
     private void addManageInventory() {
-        String[][] fieldNames = {{"ID","ID", "True", "Enter ID"},{"LOCATION", "Location", "False", "Enter Location"}};
+        String[][] fieldNames = {{"ID","ID", "True", "Enter ID"},{"LOCATION", "Location", "True", "Enter Location"},
+                {"SHELF_NUMBER", "Shelf Number", "True", "Enter Shelf_Number"}, {"IS_FULL", "Is_Full", "True", "Enter State"}};
+
         ManagerPanelPackage InventoryManager = new ManagerPanelPackage("Inventory", fieldNames);
-        InventoryManager.getSearchButton().addActionListener(e -> {
-            int id =  Integer.parseInt(InventoryManager.getFieldText("ID"));
-            JSONObject dataFound = db.getInventoryByID(id);
-            System.out.println(db.getInventoryByID(id).toString());
-            InventoryManager.showDbData(dataFound);
+        //Delete
+        InventoryManager.addDeleteAction("ID", db::deleteInventory);
+        // Add
+        InventoryManager.getAddButton().addActionListener(e -> {
+            if(InventoryManager.checkMandatoryFields()){
+                try{
+                    int id = Integer.parseInt(InventoryManager.getFieldText("ID"));
+                    boolean success = db.insertInventory(id,
+                            InventoryManager.getFieldText("LOCATION"),
+                            InventoryManager.getFieldAsInt("SHELF_NUMBER"),
+                            InventoryManager.getFieldText("IS_FULL")
+                    );
+                    if(success){
+                        InventoryManager.insertSuccessPopup(id);
+                    }
+                } catch (NumberFormatException err) {
+                    InventoryManager.invalidDataPopup();
+                }
+            }
         });
+        // Update
+        InventoryManager.getUpdateButton().addActionListener(e -> {
+            if(InventoryManager.checkMandatoryFields()){
+                try{
+                    int id = Integer.parseInt(InventoryManager.getFieldText("ID"));
+                    boolean success = db.updateInventory(id,
+                            InventoryManager.getFieldText("LOCATION"),
+                            InventoryManager.getFieldAsInt("SHELF_NUMBER"),
+                            InventoryManager.getFieldText("IS_FULL")
+                    );
+                    if(success){
+                        InventoryManager.insertSuccessPopup(id);
+                    }
+                } catch (NumberFormatException err) {
+                    InventoryManager.invalidDataPopup();
+                }
+            }
+        });
+
+        InventoryManager.addSearchAction("ID", db::getInventoryByID);
         managerPanelPackageMap.put("Inventory",InventoryManager);
     }
 
