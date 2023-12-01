@@ -5,6 +5,8 @@ import org.json.JSONObject;
 
 import javax.swing.*;
 import java.awt.*;
+import java.math.BigDecimal;
+import java.sql.Date;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -123,6 +125,91 @@ public class AquariumManagementUI extends JFrame {
         cardLayout.show(cardsPanel, "HomePanel");
     }
 
+
+    // METHODS FOR AGGREGATION WITH HAVING AND DIVISION PLEASE CHANGE AS YOU LIKE
+    private void addAggregationPanel() {
+        JButton aggregationButton = new JButton("Aggregation Query");
+        aggregationButton.setPreferredSize(buttonSize);
+        aggregationButton.addActionListener(e -> createAndShowAggregationPanel());
+        getContentPane().add(aggregationButton, BorderLayout.SOUTH);
+    }
+
+    private void createAndShowAggregationPanel() {
+        JFrame aggregationFrame = new JFrame("High Earning Staff Aggregation");
+        aggregationFrame.setSize(400, 200);
+        JPanel aggregationPanel = new JPanel();
+        aggregationPanel.setLayout(new GridLayout(0, 1));
+
+        JLabel thresholdLabel = new JLabel("Enter Salary Threshold:");
+        JTextField thresholdTextField = new JTextField(10);
+
+        JButton runQueryButton = new JButton("Run Query");
+        JTextArea resultArea = new JTextArea(5, 20);
+        resultArea.setEditable(false);
+
+        runQueryButton.addActionListener(e -> {
+            try {
+                BigDecimal threshold = new BigDecimal(thresholdTextField.getText());
+                JSONArray result = db.getSalariesWithHighEarningStaffCounts(threshold);
+                resultArea.setText(result.toString(4));
+            } catch (NumberFormatException ex) {
+                JOptionPane.showMessageDialog(aggregationFrame, "Please enter a valid decimal number for the salary threshold.");
+            }
+        });
+
+        aggregationPanel.add(thresholdLabel);
+        aggregationPanel.add(thresholdTextField);
+        aggregationPanel.add(runQueryButton);
+        aggregationPanel.add(new JScrollPane(resultArea));
+
+        aggregationFrame.add(aggregationPanel);
+        aggregationFrame.pack();
+        aggregationFrame.setLocationRelativeTo(null);
+        aggregationFrame.setVisible(true);
+    }
+
+    private void addDivisionPanel() {
+        JButton divisionButton = new JButton("Division Query");
+        divisionButton.setPreferredSize(buttonSize);
+        divisionButton.addActionListener(e -> createAndShowDivisionPanel());
+        getContentPane().add(divisionButton, BorderLayout.SOUTH);
+    }
+
+    private void createAndShowDivisionPanel() {
+        JFrame divisionFrame = new JFrame("Veterinarians for All of Specific Species");
+        divisionFrame.setSize(400, 200);
+        JPanel divisionPanel = new JPanel();
+        divisionPanel.setLayout(new GridLayout(0, 1));
+
+        JLabel speciesLabel = new JLabel("Enter Species:");
+        JTextField speciesTextField = new JTextField(10);
+
+        JButton runQueryButton = new JButton("Run Query");
+        JTextArea resultArea = new JTextArea(5, 20);
+        resultArea.setEditable(false);
+
+        runQueryButton.addActionListener(e -> {
+            String species = speciesTextField.getText().trim();
+            if (!species.isEmpty()) {
+                JSONArray result = db.getVeterinariansWhoWorkedWithAllOfSpecificSpecies(species);
+                resultArea.setText(result.toString(4));
+            } else {
+                JOptionPane.showMessageDialog(divisionFrame, "Please enter a species name.");
+            }
+        });
+
+        divisionPanel.add(speciesLabel);
+        divisionPanel.add(speciesTextField);
+        divisionPanel.add(runQueryButton);
+        divisionPanel.add(new JScrollPane(resultArea));
+
+        divisionFrame.add(divisionPanel);
+        divisionFrame.pack();
+        divisionFrame.setLocationRelativeTo(null);
+        divisionFrame.setVisible(true);
+    }
+
+
     private void initializeManagers() {
         // TODO: Add DB NAME and Change inputFieldMap use DB Field name as key
         // each entry = {DB_FIELD_NAME, DISPLAY_NAME, PLACE_HOLDER(optional)}
@@ -130,6 +217,18 @@ public class AquariumManagementUI extends JFrame {
         addManageAnimal();
         addManagePlant();
         addManageWaterTank();
+
+        // Recent addManagers
+        addManageAquarist();
+        addManageCustodian();
+        addManageVeterinarian();
+        addManageStaff();
+
+
+
+        // Aggregation UI code
+        addAggregationPanel();
+        addDivisionPanel();
 
 
     }
@@ -251,6 +350,200 @@ public class AquariumManagementUI extends JFrame {
         });
         managerPanelPackageMap.put("Plant",panelPkg);
     }
+    private void addManageAquarist() {
+        String[][] fieldNames = {
+                {"ID", "ID", "True", "Enter ID"},
+                {"DIVING_LEVEL", "Diving Level", "True", "Enter Diving Level"},
+                {"WATER_TANK_ID", "Water Tank ID", "True", "Enter Water Tank ID"}
+        };
+
+        // Create the ManagerPanelPackage for Aquarist
+        ManagerPanelPackage panelPkg = new ManagerPanelPackage("Aquarist", fieldNames);
+
+        // Search action: Retrieve details of an Aquarist by ID
+        panelPkg.addSearchAction("ID", db::getAquaristByID);
+
+        // Delete action: Remove an Aquarist entry by ID
+        panelPkg.addDeleteAction("ID", db::deleteAquarist);
+
+        // Add action: Create a new Aquarist entry
+        panelPkg.getAddButton().addActionListener(e -> {
+            if(panelPkg.checkMandatoryFields()){
+                try {
+                    int id = Integer.parseInt(panelPkg.getFieldText("ID"));
+                    BigDecimal divingLevel = new BigDecimal(panelPkg.getFieldText("DIVING_LEVEL"));
+                    int waterTankId = Integer.parseInt(panelPkg.getFieldText("WATER_TANK_ID"));
+                    boolean success = db.insertAquarist(id, divingLevel, waterTankId);
+                    if(success){
+                        panelPkg.insertSuccessPopup(id);
+                    }
+                } catch (NumberFormatException err) {
+                    panelPkg.invalidDataPopup();
+                }
+            }
+        });
+
+        // Update action: Modify an existing Aquarist entry
+        panelPkg.getUpdateButton().addActionListener(e -> {
+            if(panelPkg.checkMandatoryFields()){
+                try {
+                    int id = Integer.parseInt(panelPkg.getFieldText("ID"));
+                    BigDecimal divingLevel = new BigDecimal(panelPkg.getFieldText("DIVING_LEVEL"));
+                    int waterTankId = Integer.parseInt(panelPkg.getFieldText("WATER_TANK_ID"));
+                    boolean success = db.updateAquarist(id, divingLevel, waterTankId);
+                    if(success){
+                        panelPkg.updateSuccessPopup(id);
+                    }
+                } catch (NumberFormatException err) {
+                    panelPkg.invalidDataPopup();
+                }
+            }
+        });
+
+        managerPanelPackageMap.put("Aquarist", panelPkg);
+    }
+
+    private void addManageCustodian() {
+        String[][] fieldNames = {
+                {"ID", "ID", "True", "Enter ID"},
+                {"EXHIBIT_ID", "Exhibit ID", "True", "Enter Exhibit ID"}
+        };
+
+        // Create the ManagerPanelPackage for Custodian
+        ManagerPanelPackage panelPkg = new ManagerPanelPackage("Custodian", fieldNames);
+
+        // Search action: Retrieve details of a Custodian by ID
+        panelPkg.addSearchAction("ID", db::getCustodianByID);
+
+        // Delete action: Remove a Custodian entry by ID
+        panelPkg.addDeleteAction("ID", db::deleteCustodian);
+
+        // Add action: Create a new Custodian entry
+        panelPkg.getAddButton().addActionListener(e -> {
+            if(panelPkg.checkMandatoryFields()){
+                try {
+                    int id = Integer.parseInt(panelPkg.getFieldText("ID"));
+                    int exhibitId = Integer.parseInt(panelPkg.getFieldText("EXHIBIT_ID"));
+                    boolean success = db.insertCustodian(id, exhibitId);
+                    if(success){
+                        panelPkg.insertSuccessPopup(id);
+                    }
+                } catch (NumberFormatException err) {
+                    panelPkg.invalidDataPopup();
+                }
+            }
+        });
+
+        // Update action: Modify an existing Custodian entry
+        panelPkg.getUpdateButton().addActionListener(e -> {
+            if(panelPkg.checkMandatoryFields()){
+                try {
+                    int id = Integer.parseInt(panelPkg.getFieldText("ID"));
+                    int exhibitId = Integer.parseInt(panelPkg.getFieldText("EXHIBIT_ID"));
+                    boolean success = db.updateCustodian(id, exhibitId);
+                    if(success){
+                        panelPkg.updateSuccessPopup(id);
+                    }
+                } catch (NumberFormatException err) {
+                    panelPkg.invalidDataPopup();
+                }
+            }
+        });
+
+        managerPanelPackageMap.put("Custodian", panelPkg);
+    }
+
+    private void addManageVeterinarian() {
+        String[][] fieldNames = {
+                {"ID", "ID", "True", "Enter ID"}
+        };
+
+        // Create the ManagerPanelPackage for Veterinarian
+        ManagerPanelPackage panelPkg = new ManagerPanelPackage("Veterinarian", fieldNames);
+
+        // Search action: Retrieve details of a Veterinarian by ID
+        panelPkg.addSearchAction("ID", db::getVeterinarianByID);
+
+        // Delete action: Remove a Veterinarian entry by ID
+        panelPkg.addDeleteAction("ID", db::deleteVeterinarian);
+
+        // Add action: Create a new Veterinarian entry
+        panelPkg.getAddButton().addActionListener(e -> {
+            if(panelPkg.checkMandatoryFields()){
+                try {
+                    int id = Integer.parseInt(panelPkg.getFieldText("ID"));
+                    boolean success = db.insertVeterinarian(id);
+                    if(success){
+                        panelPkg.insertSuccessPopup(id);
+                    }
+                } catch (NumberFormatException err) {
+                    panelPkg.invalidDataPopup();
+                }
+            }
+        });
+
+        managerPanelPackageMap.put("Veterinarian", panelPkg);
+    }
+
+    private void addManageStaff() {
+        String[][] fieldNames = {
+                {"ID", "ID", "True", "Enter ID"},
+                {"SALARY", "Salary", "True", "Enter Salary"},
+                {"STAFF_NAME", "Staff Name", "True", "Enter Staff Name"},
+                {"DATEHIRED", "Date Hired", "True", "Enter Date Hired (YYYY-MM-DD)"}
+        };
+
+        // Create the ManagerPanelPackage for Staff
+        ManagerPanelPackage panelPkg = new ManagerPanelPackage("Staff", fieldNames);
+
+        // Search action: Retrieve details of a Staff by ID
+        panelPkg.addSearchAction("ID", db::getStaffByID);
+
+        // Delete action: Remove a Staff entry by ID
+        panelPkg.addDeleteAction("ID", db::deleteStaff);
+
+        // Add action: Create a new Staff entry
+        panelPkg.getAddButton().addActionListener(e -> {
+            if(panelPkg.checkMandatoryFields()){
+                try {
+                    int id = Integer.parseInt(panelPkg.getFieldText("ID"));
+                    BigDecimal salary = new BigDecimal(panelPkg.getFieldText("SALARY"));
+                    String staffName = panelPkg.getFieldText("STAFF_NAME");
+                    Date dateHired = Date.valueOf(panelPkg.getFieldText("DATEHIRED")); // Assumes the date is entered in the format YYYY-MM-DD
+                    boolean success = db.insertStaff(id, salary, staffName, dateHired);
+                    if(success){
+                        panelPkg.insertSuccessPopup(id);
+                    }
+                } catch (IllegalArgumentException err) {
+                    panelPkg.invalidDataPopup();
+                }
+            }
+        });
+
+        // Update action: Modify an existing Staff entry
+        panelPkg.getUpdateButton().addActionListener(e -> {
+            if(panelPkg.checkMandatoryFields()){
+                try {
+                    int id = Integer.parseInt(panelPkg.getFieldText("ID"));
+                    BigDecimal salary = new BigDecimal(panelPkg.getFieldText("SALARY"));
+                    String staffName = panelPkg.getFieldText("STAFF_NAME");
+                    Date dateHired = Date.valueOf(panelPkg.getFieldText("DATEHIRED")); // Assumes the date is entered in the format YYYY-MM-DD
+                    boolean success = db.updateStaff(id, salary, staffName, dateHired);
+                    if(success){
+                        panelPkg.updateSuccessPopup(id);
+                    }
+                } catch (IllegalArgumentException err) {
+                    panelPkg.invalidDataPopup();
+                }
+            }
+        });
+
+        managerPanelPackageMap.put("Staff", panelPkg);
+    }
+
+
+
+
 
     // TODO: Currently no supporting data available. test this when data is ready
     private void addManageWaterTank() {

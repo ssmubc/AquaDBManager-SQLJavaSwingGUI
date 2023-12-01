@@ -1,0 +1,7 @@
+# Default ignored files
+/shelf/
+/workspace.xml
+
+# Ignore all files and directories in .idea/dataSources/
+.idea/dataSources/
+AquariumManagement/resources/json-20210307.jar

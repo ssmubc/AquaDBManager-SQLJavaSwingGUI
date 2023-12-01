@@ -280,12 +280,33 @@ CREATE TABLE ItemUnit (
                           unit VARCHAR(255) NOT NULL
 );
 INSERT INTO ItemUnit (name, unit) VALUES ('Algae Wafers', 'Packets');
+COMMIT;
 INSERT INTO ItemUnit (name, unit) VALUES  ('Coral Supplement', 'Bottles');
+COMMIT;
 INSERT INTO ItemUnit (name, unit) VALUES  ('Water Conditioner', 'Bottles');
+COMMIT;
 INSERT INTO ItemUnit (name, unit) VALUES  ('Medicated Feed', 'Packets');
+COMMIT;
 INSERT INTO ItemUnit (name, unit) VALUES  ('Plankton', 'Packets');
+COMMIT;
 INSERT INTO ItemUnit (name, unit) VALUES  ('Aquarium Salt', 'Boxes');
+COMMIT;
 INSERT INTO ItemUnit (name, unit) VALUES  ('Water Test Kits', 'Kits');
+COMMIT;
+INSERT INTO ItemUnit (name, unit) VALUES  ('Frozen Shrimp', 'Packets');
+COMMIT;
+INSERT INTO ItemUnit (name, unit) VALUES  ('Fish Flakes', 'Packets');
+COMMIT;
+INSERT INTO ItemUnit (name, unit) VALUES  ('Bloodworms', 'Packets');
+COMMIT;
+INSERT INTO ItemUnit (name, unit) VALUES  ('Pellets', 'Packets');
+COMMIT;
+INSERT INTO ItemUnit (name, unit) VALUES  ('Krill', 'Packets');
+COMMIT;
+INSERT INTO ItemUnit (name, unit) VALUES  ('Squid', 'Packets');
+COMMIT;
+INSERT INTO ItemUnit (name, unit) VALUES  ('Mysis Shrimp', 'Packets');
+COMMIT;
 
 
 CREATE TABLE Equipment (
