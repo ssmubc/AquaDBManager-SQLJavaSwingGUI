@@ -2521,28 +2521,28 @@ public class AquariumManagementDB {
     // #:~:text=In%20SQL%2C%20you%20use%20the,when%20used%20with%20aggregate%20functions.
 
     // FUNCTION FOR "Queries: Aggregation with Having"
-    public JSONArray getSalariesWithHighEarningStaffCounts(BigDecimal salaryThreshold) {
-        String sql = "SELECT SALARY, COUNT(*) AS StaffCount " +
-                "FROM Staff " +
-                "GROUP BY SALARY " +
-                "HAVING SALARY > ?";
+    public JSONArray getCountShelvesByFullnessStatus(int shelfNumberThreshold) {
+        String sql = "SELECT IS_FULL, COUNT(*) AS ShelfCount " +
+                "FROM SHELFININVENTORY " +
+                "GROUP BY IS_FULL " +
+                "HAVING COUNT(SHELF_NUMBER) > ?";
 
-        JSONArray salariesArray = new JSONArray();
+        JSONArray shelfCountsArray = new JSONArray();
 
         try {
             PreparedStatement preparedStatement = connection.prepareStatement(sql);
-            preparedStatement.setBigDecimal(1, salaryThreshold);
+            preparedStatement.setInt(1, shelfNumberThreshold);
             ResultSet resultSet = preparedStatement.executeQuery();
 
             while (resultSet.next()) {
-                BigDecimal salary = resultSet.getBigDecimal("SALARY");
-                int count = resultSet.getInt("StaffCount");
+                String isFull = resultSet.getString("IS_FULL");
+                int count = resultSet.getInt("ShelfCount");
 
-                JSONObject salaryInfo = new JSONObject();
-                salaryInfo.put("SALARY", salary);
-                salaryInfo.put("StaffCount", count);
+                JSONObject shelfCountInfo = new JSONObject();
+                shelfCountInfo.put("IS_FULL", isFull);
+                shelfCountInfo.put("ShelfCount", count);
 
-                salariesArray.put(salaryInfo);
+                shelfCountsArray.put(shelfCountInfo);
             }
 
             resultSet.close();
@@ -2551,8 +2551,9 @@ public class AquariumManagementDB {
             System.out.println("Query failed: " + e.getMessage());
         }
 
-        return salariesArray.isEmpty() ? null : salariesArray;
+        return shelfCountsArray.isEmpty() ? null : shelfCountsArray;
     }
+
 
     // Citation: Studied:https://www.geeksforgeeks.org/sql-division/
     // FUNCTION FOR "Queries: Division"
