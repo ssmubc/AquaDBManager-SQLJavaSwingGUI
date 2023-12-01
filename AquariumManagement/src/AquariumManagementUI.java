@@ -48,6 +48,7 @@ public class AquariumManagementUI extends JFrame {
         tankTablePkg.setAdvancedSearch(getTankFields(), db::selectWaterTank);
         equipTablePkg.getButtonPanel().add(equipBySizeBtn(equipTablePkg));
         animalTablePkg.getButtonPanel().add(findAnimalExpertBtn(animalTablePkg));
+        animalTablePkg.getButtonPanel().add(ageAboveTempBtn(animalTablePkg));
 
 
         tablePackages.add(staffTablePkg);
@@ -57,6 +58,61 @@ public class AquariumManagementUI extends JFrame {
 
 
     }
+
+    private JButton ageAboveTempBtn(TablePackage tp) {
+        JButton btn = new JButton("Species & Age Above Temp");
+
+        btn.addActionListener(e -> {
+            JDialog dialog = new JDialog();
+            dialog.setTitle("Specie & Age Above Temp");
+            dialog.setLayout(new BorderLayout());
+            dialog.setSize(300, 150);
+
+            JPanel inputPanel = new JPanel();
+            JTextField textField = new JTextField(20);
+            inputPanel.add(new JLabel("Minimum Temperature:"));
+            inputPanel.add(textField);
+
+            JPanel buttonPanel = new JPanel();
+            JButton findButton = new JButton("Find");
+            JButton cancelButton = new JButton("Cancel");
+
+            findButton.addActionListener(ev -> {
+
+                double temp;
+                try{
+                    temp = Double.valueOf(textField.getText());
+                } catch (NumberFormatException err){
+                    tp.invalidDataPopup();
+                    return;
+                }
+
+
+                JSONArray dbData = db.groupByAnimalSpeciesAndAverageAgeAboveLivingTemp(temp);
+                if (dbData == null || dbData.isEmpty()) {
+                    JOptionPane.showMessageDialog(dialog, "No animal found", "Result", JOptionPane.INFORMATION_MESSAGE);
+                    tp.clearTable();
+                } else {
+                    tp.updateTableWithAnyData(dbData);
+                }
+
+                dialog.dispose();
+            });
+
+            // Add action listener to cancelButton
+            cancelButton.addActionListener(ev -> dialog.dispose());
+
+            buttonPanel.add(findButton);
+            buttonPanel.add(cancelButton);
+
+            dialog.add(inputPanel, BorderLayout.CENTER);
+            dialog.add(buttonPanel, BorderLayout.SOUTH);
+            dialog.setVisible(true);
+        });
+
+        return btn;
+    }
+
 
     private JButton equipBySizeBtn(TablePackage tp){
         JButton btn = new JButton("Counts By Size");
@@ -140,13 +196,6 @@ public class AquariumManagementUI extends JFrame {
     }
 
 
-    // METHODS FOR AGGREGATION WITH HAVING AND DIVISION PLEASE CHANGE AS YOU LIKE
-    private void addAggregationPanel() {
-        JButton aggregationButton = new JButton("Aggregation Query");
-        aggregationButton.setPreferredSize(buttonSize);
-        aggregationButton.addActionListener(e -> createAndShowAggregationPanel());
-        getContentPane().add(aggregationButton, BorderLayout.SOUTH);
-    }
 
     private void createAndShowAggregationPanel() {
         JFrame aggregationFrame = new JFrame("High Earning Staff Aggregation");

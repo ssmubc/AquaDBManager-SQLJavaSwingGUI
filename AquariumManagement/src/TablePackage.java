@@ -345,7 +345,7 @@ public class TablePackage {
     public JPanel getButtonPanel() {
         return this.buttonPanel;
     }
-    private void clearTable(){
+    public void clearTable(){
         // Clear existing data from the table model
         tableModel.setRowCount(0);
         tableModel.setColumnCount(0);
@@ -390,6 +390,13 @@ public class TablePackage {
                 "No Data Found\n",
                 "No Data", JOptionPane.WARNING_MESSAGE);
     }
+
+    public void invalidDataPopup() {
+        JOptionPane.showMessageDialog(packagePanel,
+                "Please fill in the fields with valid data:\n",
+                "Invalid Data", JOptionPane.WARNING_MESSAGE);
+    }
+
 
 
 
