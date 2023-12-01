@@ -191,6 +191,15 @@ COMMIT;
 INSERT INTO Animal(id, animal_name, Species, Age, LivingTemp, water_tank_id, veterinarian_id)
 VALUES (35, 'Aldabra giant tortoise', 'Aldabrachelys gigantea', 1, 27.5, 5, 105);
 COMMIT;
+INSERT INTO Animal(id, animal_name, Species, Age, LivingTemp, water_tank_id, veterinarian_id)
+VALUES (36, 'wrasse', 'Humphead wrasse', 1, 27.8, 5, 105);
+COMMIT;
+INSERT INTO Animal(id, animal_name, Species, Age, LivingTemp, water_tank_id, veterinarian_id)
+VALUES (37, 'Phinius', 'Fin Whale', 4, 27.8, 5, 105);
+COMMIT;
+INSERT INTO Animal(id, animal_name, Species, Age, LivingTemp, water_tank_id, veterinarian_id)
+VALUES (38, 'Benjamin', 'Beluga Whale', 3, 27.7, 5, 105);
+COMMIT;
 
 
 CREATE TABLE Inventory (
@@ -271,12 +280,33 @@ CREATE TABLE ItemUnit (
                           unit VARCHAR(255) NOT NULL
 );
 INSERT INTO ItemUnit (name, unit) VALUES ('Algae Wafers', 'Packets');
+COMMIT;
 INSERT INTO ItemUnit (name, unit) VALUES  ('Coral Supplement', 'Bottles');
+COMMIT;
 INSERT INTO ItemUnit (name, unit) VALUES  ('Water Conditioner', 'Bottles');
+COMMIT;
 INSERT INTO ItemUnit (name, unit) VALUES  ('Medicated Feed', 'Packets');
+COMMIT;
 INSERT INTO ItemUnit (name, unit) VALUES  ('Plankton', 'Packets');
+COMMIT;
 INSERT INTO ItemUnit (name, unit) VALUES  ('Aquarium Salt', 'Boxes');
+COMMIT;
 INSERT INTO ItemUnit (name, unit) VALUES  ('Water Test Kits', 'Kits');
+COMMIT;
+INSERT INTO ItemUnit (name, unit) VALUES  ('Frozen Shrimp', 'Packets');
+COMMIT;
+INSERT INTO ItemUnit (name, unit) VALUES  ('Fish Flakes', 'Packets');
+COMMIT;
+INSERT INTO ItemUnit (name, unit) VALUES  ('Bloodworms', 'Packets');
+COMMIT;
+INSERT INTO ItemUnit (name, unit) VALUES  ('Pellets', 'Packets');
+COMMIT;
+INSERT INTO ItemUnit (name, unit) VALUES  ('Krill', 'Packets');
+COMMIT;
+INSERT INTO ItemUnit (name, unit) VALUES  ('Squid', 'Packets');
+COMMIT;
+INSERT INTO ItemUnit (name, unit) VALUES  ('Mysis Shrimp', 'Packets');
+COMMIT;
 
 
 CREATE TABLE Equipment (

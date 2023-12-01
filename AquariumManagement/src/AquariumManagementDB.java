@@ -506,10 +506,9 @@ public class AquariumManagementDB {
     }
 
     public JSONArray listItems() {
-        String sql = "SELECT iq.ID, iq.NAME, iq.QUANTITY, iu.UNIT, s.VENDORID " +
+        String sql = "SELECT iq.ID, iq.NAME, iq.QUANTITY, iu.UNIT " +
                 "FROM ITEMQUANTITY iq " +
-                "JOIN ITEMUNIT iu ON iq.NAME = iu.NAME " +
-                "JOIN SUPPLY s on iq.ID = s.ITEMID";
+                "JOIN ITEMUNIT iu ON iq.NAME = iu.NAME";
 
         JSONArray itemsJSONArray = new JSONArray();
 
@@ -522,19 +521,17 @@ public class AquariumManagementDB {
                 String name = resultSet.getString("NAME");
                 int quantity = resultSet.getInt("QUANTITY");
                 String unit = resultSet.getString("UNIT");
-                String vendorID = resultSet.getString("VENDORID");
 
                 JSONObject item = new JSONObject();
                 item.put("ID", id);
                 item.put("NAME", name);
                 item.put("QUANTITY", quantity);
                 item.put("UNIT", unit);
-                item.put("VENDORID", vendorID);
 
                 itemsJSONArray.put(item);
 
                 System.out.println("ID: " + id + ", NAME: " + name + ", QUANTITY: " + quantity + ", UNIT: " + unit
-                        + ", VENDORID: " + vendorID);
+                        );
 
             }
 
@@ -1524,7 +1521,7 @@ public class AquariumManagementDB {
     // Citation: Studied: https://www.w3schools.com/sql/sql_groupby.asp
 
     // FUNCTION FOR "Queries: Nested Aggregation with GROUP BY"
-    public JSONArray groupByAnimalSpeciesAndAverageAgeAboveLivingTemp(float temperatureThreshold) {
+    public JSONArray groupByAnimalSpeciesAndAverageAgeAboveLivingTemp(double temperatureThreshold) {
         String sql = "SELECT a.SPECIES, AVG(a.AGE) " +
                 "FROM ANIMAL a " +
                 "GROUP BY a.SPECIES " +
@@ -1537,12 +1534,12 @@ public class AquariumManagementDB {
 
         try {
             PreparedStatement preparedStatement = connection.prepareStatement(sql);
-            preparedStatement.setFloat(1, temperatureThreshold);
+            preparedStatement.setDouble(1, temperatureThreshold);
             ResultSet resultSet = preparedStatement.executeQuery();
 
             while (resultSet.next()) {
                 String species = resultSet.getString("SPECIES");
-                int average_age = resultSet.getInt("AVERAGE_AGE");
+                int average_age = resultSet.getInt("AVG(a.AGE)");
 
                 JSONObject animalInfo = new JSONObject();
                 animalInfo.put("SPECIES", species);
