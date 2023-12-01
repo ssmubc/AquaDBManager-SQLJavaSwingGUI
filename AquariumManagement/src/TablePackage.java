@@ -147,8 +147,6 @@ public class TablePackage {
 
 
     private void showAdvancedSearchPanel() {
-
-
         JDialog searchDialog = new JDialog();
         searchDialog.setTitle("Advanced Search");
         searchDialog.setLayout(new BorderLayout());
@@ -302,7 +300,7 @@ public class TablePackage {
 
             if(type.equals("Float")){
                 try{
-                    Integer.parseInt(inputValue);
+                    Float.parseFloat(inputValue);
                 } catch (NumberFormatException err){
                     JOptionPane.showMessageDialog(searchPanel,
                             "Please use number for " + columnName +" value",
@@ -329,7 +327,12 @@ public class TablePackage {
         for (RowInputComponents components : rowInputComponentsList) {
             if(components.isUsed()){
                 JSONObject criteria = new JSONObject();
-                criteria.put("Name", dispToDB.get(components.columnName));
+                String name = dispToDB.get(components.columnName);
+                if (name.equals("TEMPERATURE")){
+                    name = "wl." + name;
+                }
+
+                criteria.put("Name", "'"+name+"'");
                 criteria.put("Condition", components.conditionComboBox.getSelectedItem().toString());
                 criteria.put("Comparison", components.comparisonField.getSelectedItem().toString());
                 criteria.put("Value", components.valueField.getText());
