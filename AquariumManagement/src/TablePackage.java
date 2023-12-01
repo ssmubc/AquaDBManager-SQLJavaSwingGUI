@@ -218,9 +218,9 @@ public class TablePackage {
         rowPanel.add(new JLabel(colName));
         String[] comparisonOptions;
         if(type.equals("String")){
-            comparisonOptions = new String[]{"=="};
+            comparisonOptions = new String[]{"="};
         } else{
-            comparisonOptions = new String[]{">", "<", ">=", "<=", "=="};
+            comparisonOptions = new String[]{">", "<", ">=", "<=", "="};
         }
 
         JComboBox<String> conditionComboBox = new JComboBox<>(new String[]{"Not Using", "AND", "OR"});
@@ -332,10 +332,10 @@ public class TablePackage {
                     name = "wl." + name;
                 }
 
-                criteria.put("Name", "'"+name+"'");
+                criteria.put("Name", name);
                 criteria.put("Condition", components.conditionComboBox.getSelectedItem().toString());
                 criteria.put("Comparison", components.comparisonField.getSelectedItem().toString());
-                criteria.put("Value", components.valueField.getText());
+                criteria.put("Value", "'"+components.valueField.getText()+"'");
 
                 searchCriteriaArray.put(criteria);
             }
