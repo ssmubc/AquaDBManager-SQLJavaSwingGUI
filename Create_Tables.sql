@@ -1,233 +1,233 @@
 -- DROP the tables We will drop tables with foreign key dependencies first
 
 BEGIN
-   EXECUTE IMMEDIATE 'DROP TABLE Supply';
+    EXECUTE IMMEDIATE 'DROP TABLE Supply';
 EXCEPTION
-   WHEN OTHERS THEN
-      IF SQLCODE != -942 THEN
-         RAISE;
-      END IF;
+    WHEN OTHERS THEN
+        IF SQLCODE != -942 THEN
+            RAISE;
+        END IF;
 END;
 /
 
 BEGIN
-   EXECUTE IMMEDIATE 'DROP TABLE Aquarist_Maintain_WaterTank';
+    EXECUTE IMMEDIATE 'DROP TABLE Aquarist_Maintain_WaterTank';
 EXCEPTION
-   WHEN OTHERS THEN
-      IF SQLCODE != -942 THEN
-         RAISE;
-      END IF;
+    WHEN OTHERS THEN
+        IF SQLCODE != -942 THEN
+            RAISE;
+        END IF;
 END;
 /
 
 BEGIN
-   EXECUTE IMMEDIATE 'DROP TABLE Grown_In_Plant';
+    EXECUTE IMMEDIATE 'DROP TABLE Grown_In_Plant';
 EXCEPTION
-   WHEN OTHERS THEN
-      IF SQLCODE != -942 THEN
-         RAISE;
-      END IF;
+    WHEN OTHERS THEN
+        IF SQLCODE != -942 THEN
+            RAISE;
+        END IF;
 END;
 /
 
 BEGIN
-   EXECUTE IMMEDIATE 'DROP TABLE VendorLogistics';
+    EXECUTE IMMEDIATE 'DROP TABLE VendorLogistics';
 EXCEPTION
-   WHEN OTHERS THEN
-      IF SQLCODE != -942 THEN
-         RAISE;
-      END IF;
+    WHEN OTHERS THEN
+        IF SQLCODE != -942 THEN
+            RAISE;
+        END IF;
 END;
 /
 
 
 BEGIN
-   EXECUTE IMMEDIATE 'DROP TABLE VendorReputation';
+    EXECUTE IMMEDIATE 'DROP TABLE VendorReputation';
 EXCEPTION
-   WHEN OTHERS THEN
-      IF SQLCODE != -942 THEN
-         RAISE;
-      END IF;
+    WHEN OTHERS THEN
+        IF SQLCODE != -942 THEN
+            RAISE;
+        END IF;
 END;
 /
 
 BEGIN
-   EXECUTE IMMEDIATE 'DROP TABLE Custodian_Clean_Exhibit_Table';
+    EXECUTE IMMEDIATE 'DROP TABLE Custodian_Clean_Exhibit_Table';
 EXCEPTION
-   WHEN OTHERS THEN
-      IF SQLCODE != -942 THEN
-         RAISE;
-      END IF;
+    WHEN OTHERS THEN
+        IF SQLCODE != -942 THEN
+            RAISE;
+        END IF;
 END;
 /
 
 BEGIN
-   EXECUTE IMMEDIATE 'DROP TABLE Feed';
+    EXECUTE IMMEDIATE 'DROP TABLE Feed';
 EXCEPTION
-   WHEN OTHERS THEN
-      IF SQLCODE != -942 THEN
-         RAISE;
-      END IF;
+    WHEN OTHERS THEN
+        IF SQLCODE != -942 THEN
+            RAISE;
+        END IF;
 END;
 /
 
 BEGIN
-   EXECUTE IMMEDIATE 'DROP TABLE Installed';
+    EXECUTE IMMEDIATE 'DROP TABLE Installed';
 EXCEPTION
-   WHEN OTHERS THEN
-      IF SQLCODE != -942 THEN
-         RAISE;
-      END IF;
+    WHEN OTHERS THEN
+        IF SQLCODE != -942 THEN
+            RAISE;
+        END IF;
 END;
 /
 
 BEGIN
-   EXECUTE IMMEDIATE 'DROP TABLE InStock';
+    EXECUTE IMMEDIATE 'DROP TABLE InStock';
 EXCEPTION
-   WHEN OTHERS THEN
-      IF SQLCODE != -942 THEN
-         RAISE;
-      END IF;
+    WHEN OTHERS THEN
+        IF SQLCODE != -942 THEN
+            RAISE;
+        END IF;
 END;
 /
 
 BEGIN
-   EXECUTE IMMEDIATE 'DROP TABLE Food';
+    EXECUTE IMMEDIATE 'DROP TABLE Food';
 EXCEPTION
-   WHEN OTHERS THEN
-      IF SQLCODE != -942 THEN
-         RAISE;
-      END IF;
+    WHEN OTHERS THEN
+        IF SQLCODE != -942 THEN
+            RAISE;
+        END IF;
 END;
 /
 
 BEGIN
-   EXECUTE IMMEDIATE 'DROP TABLE Equipment';
+    EXECUTE IMMEDIATE 'DROP TABLE Equipment';
 EXCEPTION
-   WHEN OTHERS THEN
-      IF SQLCODE != -942 THEN
-         RAISE;
-      END IF;
+    WHEN OTHERS THEN
+        IF SQLCODE != -942 THEN
+            RAISE;
+        END IF;
 END;
 /
 
 BEGIN
-   EXECUTE IMMEDIATE 'DROP TABLE ItemUnit';
+    EXECUTE IMMEDIATE 'DROP TABLE ItemUnit';
 EXCEPTION
-   WHEN OTHERS THEN
-      IF SQLCODE != -942 THEN
-         RAISE;
-      END IF;
+    WHEN OTHERS THEN
+        IF SQLCODE != -942 THEN
+            RAISE;
+        END IF;
 END;
 /
 
 BEGIN
-   EXECUTE IMMEDIATE 'DROP TABLE ItemQuantity';
+    EXECUTE IMMEDIATE 'DROP TABLE ItemQuantity';
 EXCEPTION
-   WHEN OTHERS THEN
-      IF SQLCODE != -942 THEN
-         RAISE;
-      END IF;
+    WHEN OTHERS THEN
+        IF SQLCODE != -942 THEN
+            RAISE;
+        END IF;
 END;
 /
 
 BEGIN
-   EXECUTE IMMEDIATE 'DROP TABLE ShelfInInventory';
+    EXECUTE IMMEDIATE 'DROP TABLE ShelfInInventory';
 EXCEPTION
-   WHEN OTHERS THEN
-      IF SQLCODE != -942 THEN
-         RAISE;
-      END IF;
+    WHEN OTHERS THEN
+        IF SQLCODE != -942 THEN
+            RAISE;
+        END IF;
 END;
 /
 
 BEGIN
-   EXECUTE IMMEDIATE 'DROP TABLE Inventory';
+    EXECUTE IMMEDIATE 'DROP TABLE Inventory';
 EXCEPTION
-   WHEN OTHERS THEN
-      IF SQLCODE != -942 THEN
-         RAISE;
-      END IF;
+    WHEN OTHERS THEN
+        IF SQLCODE != -942 THEN
+            RAISE;
+        END IF;
 END;
 /
 
 BEGIN
-   EXECUTE IMMEDIATE 'DROP TABLE Animal';
+    EXECUTE IMMEDIATE 'DROP TABLE Animal';
 EXCEPTION
-   WHEN OTHERS THEN
-      IF SQLCODE != -942 THEN
-         RAISE;
-      END IF;
+    WHEN OTHERS THEN
+        IF SQLCODE != -942 THEN
+            RAISE;
+        END IF;
 END;
 /
 
 BEGIN
-   EXECUTE IMMEDIATE 'DROP TABLE WaterTankpH';
+    EXECUTE IMMEDIATE 'DROP TABLE WaterTankpH';
 EXCEPTION
-   WHEN OTHERS THEN
-      IF SQLCODE != -942 THEN
-         RAISE;
-      END IF;
+    WHEN OTHERS THEN
+        IF SQLCODE != -942 THEN
+            RAISE;
+        END IF;
 END;
 /
 
 BEGIN
-   EXECUTE IMMEDIATE 'DROP TABLE Aquarist';
+    EXECUTE IMMEDIATE 'DROP TABLE Aquarist';
 EXCEPTION
-   WHEN OTHERS THEN
-      IF SQLCODE != -942 THEN
-         RAISE;
-      END IF;
+    WHEN OTHERS THEN
+        IF SQLCODE != -942 THEN
+            RAISE;
+        END IF;
 END;
 /
 
 BEGIN
-   EXECUTE IMMEDIATE 'DROP TABLE WaterTankLogistics';
+    EXECUTE IMMEDIATE 'DROP TABLE WaterTankLogistics';
 EXCEPTION
-   WHEN OTHERS THEN
-      IF SQLCODE != -942 THEN
-         RAISE;
-      END IF;
+    WHEN OTHERS THEN
+        IF SQLCODE != -942 THEN
+            RAISE;
+        END IF;
 END;
 /
 
 BEGIN
-   EXECUTE IMMEDIATE 'DROP TABLE Veterinarian';
+    EXECUTE IMMEDIATE 'DROP TABLE Veterinarian';
 EXCEPTION
-   WHEN OTHERS THEN
-      IF SQLCODE != -942 THEN
-         RAISE;
-      END IF;
+    WHEN OTHERS THEN
+        IF SQLCODE != -942 THEN
+            RAISE;
+        END IF;
 END;
 /
 
 BEGIN
-   EXECUTE IMMEDIATE 'DROP TABLE Custodian';
+    EXECUTE IMMEDIATE 'DROP TABLE Custodian';
 EXCEPTION
-   WHEN OTHERS THEN
-      IF SQLCODE != -942 THEN
-         RAISE;
-      END IF;
+    WHEN OTHERS THEN
+        IF SQLCODE != -942 THEN
+            RAISE;
+        END IF;
 END;
 /
 
 BEGIN
-   EXECUTE IMMEDIATE 'DROP TABLE Staff';
+    EXECUTE IMMEDIATE 'DROP TABLE Staff';
 EXCEPTION
-   WHEN OTHERS THEN
-      IF SQLCODE != -942 THEN
-         RAISE;
-      END IF;
+    WHEN OTHERS THEN
+        IF SQLCODE != -942 THEN
+            RAISE;
+        END IF;
 END;
 /
 
 BEGIN
-   EXECUTE IMMEDIATE 'DROP TABLE Exhibit';
+    EXECUTE IMMEDIATE 'DROP TABLE Exhibit';
 EXCEPTION
-   WHEN OTHERS THEN
-      IF SQLCODE != -942 THEN
-         RAISE;
-      END IF;
+    WHEN OTHERS THEN
+        IF SQLCODE != -942 THEN
+            RAISE;
+        END IF;
 END;
 /
 
@@ -238,7 +238,6 @@ END;
 
 
 COMMIT;
-
 
 CREATE TABLE Exhibit (
                          id INTEGER PRIMARY KEY,
@@ -386,6 +385,7 @@ INSERT INTO Aquarist VALUES (112, 100.00, 4);
 COMMIT;
 INSERT INTO Aquarist VALUES (113, 100.00, 5);
 COMMIT;
+
 
 
 CREATE TABLE WaterTankpH (
@@ -618,8 +618,8 @@ INSERT INTO InStock (item_id, shelf_number, inventory_id, quantity) VALUES  (2, 
 INSERT INTO InStock (item_id, shelf_number, inventory_id, quantity) VALUES  (3, 3, 2, 20);
 INSERT INTO InStock (item_id, shelf_number, inventory_id, quantity) VALUES  (4, 4, 2, 25);
 INSERT INTO InStock (item_id, shelf_number, inventory_id, quantity) VALUES  (5, 5, 3, 30);
-INSERT INTO InStock (item_id, shelf_number, inventory_id, quantity) VALUES  (6, 5, 3, 12);
-INSERT INTO InStock (item_id, shelf_number, inventory_id, quantity) VALUES  (7, 3, 2, 18);
+INSERT INTO InStock (item_id, shelf_number, inventory_id, quantity) VALUES  (6, 6, 3, 12);
+INSERT INTO InStock (item_id, shelf_number, inventory_id, quantity) VALUES  (7, 7, 4, 18);
 
 CREATE TABLE Installed (
                            equipment_id INTEGER,
@@ -750,6 +750,16 @@ CREATE TABLE Aquarist_Maintain_WaterTank (
                                              FOREIGN KEY (aquarist_id) REFERENCES Aquarist(id) ON DELETE CASCADE,
                                              FOREIGN KEY (water_tank_id) REFERENCES WaterTankLogistics(id) ON DELETE CASCADE
 );
+INSERT INTO AQUARIST_MAINTAIN_WATERTANK VALUES (107, 1);
+COMMIT;
+INSERT INTO AQUARIST_MAINTAIN_WATERTANK VALUES (110, 2);
+COMMIT;
+INSERT INTO AQUARIST_MAINTAIN_WATERTANK VALUES (111, 3);
+COMMIT;
+INSERT INTO AQUARIST_MAINTAIN_WATERTANK VALUES (112, 4);
+COMMIT;
+INSERT INTO AQUARIST_MAINTAIN_WATERTANK VALUES (113, 5);
+COMMIT;
 
 
 CREATE TABLE Supply (
