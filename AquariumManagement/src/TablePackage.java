@@ -8,6 +8,7 @@ import javax.swing.table.DefaultTableModel;
 import java.awt.*;
 import java.util.List;
 import java.util.*;
+import java.util.function.Function;
 import java.util.function.Supplier;
 
 
@@ -27,6 +28,7 @@ public class TablePackage {
     private HashMap<String, String> dispToDB;
     private HashMap<String, String> DBToDisp;
 
+    private Function<JSONArray, JSONArray> selectorFunction;
 
 
     private Supplier<JSONArray> dataSupplier;
@@ -55,10 +57,11 @@ public class TablePackage {
         packagePanel.add(buttonPanel, BorderLayout.SOUTH);
     }
 
-    public void setAdvancedSearch(JSONArray fields){
+    public void setAdvancedSearch(JSONArray fields, Function<JSONArray, JSONArray> selectorFunction){
         dispToDB = new HashMap<>();
         DBToDisp = new HashMap<>();
         colNames = new ArrayList<>();
+        this.selectorFunction = selectorFunction;
 
         for (int i = 0; i < fields.length(); i++) {
             JSONObject field = fields.getJSONObject(i);
@@ -112,15 +115,19 @@ public class TablePackage {
     }
 
     public void updateTableWithAllData(JSONArray dbData) {
-        // Check if columns need to be initialized
-        if (!columnInitialized) {
-            for (String columnName : DBfieldNames) {
-                tableModel.addColumn(DBToDisp.getOrDefault(columnName, columnName));
-            }
-            columnInitialized = true;
+        if (dbData.isEmpty()){
+            noDataPopup();
+            return;
         }
+        clearTable();
+
+        // Check if columns need to be initialized
+        for (String columnName : DBfieldNames) {
+            tableModel.addColumn(DBToDisp.getOrDefault(columnName, columnName));
+        }
+        columnInitialized = true;
+
         // Clear existing data from the table model
-        tableModel.setRowCount(0);
 
         // Iterate through each entry in the dbData array
         for (int i = 0; i < dbData.length(); i++) {
@@ -166,13 +173,7 @@ public class TablePackage {
             if(checkInputs()) {
                 JSONArray res = collectSearchCriteria();
                 System.out.println(res.toString());
-                String testDbData = "["
-                        + "{\"ID\": 1, \"WATER_TANK_LOGISTICS_NAME\": \"Tank A\", \"VOLUME\": 500.0, \"TEMPERATURE\": 22.5, \"LIGHTINGLEVEL\": \"Moderate\", \"EXHIBIT_ID\": 101, \"PH\": 7.2, \"AQUARIST_ID\": 201},"
-                        + "{\"ID\": 2, \"WATER_TANK_LOGISTICS_NAME\": \"Tank B\", \"VOLUME\": 750.0, \"TEMPERATURE\": 24.0, \"LIGHTINGLEVEL\": \"High\", \"EXHIBIT_ID\": 102, \"PH\": 7.4, \"AQUARIST_ID\": 202},"
-                        + "{\"ID\": 3, \"WATER_TANK_LOGISTICS_NAME\": \"Tank C\", \"VOLUME\": 600.0, \"TEMPERATURE\": 23.5, \"LIGHTINGLEVEL\": \"Low\", \"EXHIBIT_ID\": 103, \"PH\": 7.1, \"AQUARIST_ID\": 203}"
-                        + "]";
-                JSONArray testDbDataArray = new JSONArray(testDbData);
-                updateTableWithAllData(testDbDataArray);
+                updateTableWithAllData(selectorFunction.apply(res));
 
             }
         });

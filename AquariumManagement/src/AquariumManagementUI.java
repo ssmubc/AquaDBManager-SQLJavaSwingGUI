@@ -1,7 +1,6 @@
 package AquariumManagement.src;
 
 import org.json.JSONArray;
-import org.json.JSONObject;
 
 import javax.swing.*;
 import java.awt.*;
@@ -45,9 +44,8 @@ public class AquariumManagementUI extends JFrame {
         TablePackage staffTablePkg = new TablePackage(this::showHome,"Staffs", db::listStaff);
         TablePackage animalTablePkg = new TablePackage(this::showHome,"Animals", db::listAnimal);
 
-        tablePackages.add(tankTablePkg);
-
-        tankTablePkg.setAdvancedSearch(getTankFields());
+        
+        tankTablePkg.setAdvancedSearch(getTankFields(), db::selectWaterTank);
         equipTablePkg.getButtonPanel().add(equipBySizeBtn(equipTablePkg));
         animalTablePkg.getButtonPanel().add(findAnimalExpertBtn(animalTablePkg));
 
