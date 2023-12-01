@@ -115,7 +115,7 @@ public class TablePackage {
     }
 
     public void updateTableWithAllData(JSONArray dbData) {
-        if (dbData.isEmpty()){
+        if (dbData == null || dbData.isEmpty()){
             noDataPopup();
             return;
         }
