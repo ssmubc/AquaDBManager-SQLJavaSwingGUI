@@ -269,7 +269,7 @@ public class AquariumManagementDB {
     }
 
     // REMOVE SHELF_ON_INVENTORY SINCE ORACLE SUPPORTS ON DELETE CASCADE
-    public boolean deleteInventory(int id, int shelfNumber) {
+    public boolean deleteInventory(int id) {
         String sql = "DELETE FROM INVENTORY WHERE ID = ?";
 
         try {
