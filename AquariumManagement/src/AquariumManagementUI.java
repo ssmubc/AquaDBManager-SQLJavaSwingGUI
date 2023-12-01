@@ -168,48 +168,6 @@ public class AquariumManagementUI extends JFrame {
         aggregationFrame.setVisible(true);
     }
 
-    private void addDivisionPanel() {
-        JButton divisionButton = new JButton("Division Query");
-        divisionButton.setPreferredSize(buttonSize);
-        divisionButton.addActionListener(e -> createAndShowDivisionPanel());
-        getContentPane().add(divisionButton, BorderLayout.SOUTH);
-    }
-
-    private void createAndShowDivisionPanel() {
-        JFrame divisionFrame = new JFrame("Veterinarians for All of Specific Species");
-        divisionFrame.setSize(400, 200);
-        JPanel divisionPanel = new JPanel();
-        divisionPanel.setLayout(new GridLayout(0, 1));
-
-        JLabel speciesLabel = new JLabel("Enter Species:");
-        JTextField speciesTextField = new JTextField(10);
-
-        JButton runQueryButton = new JButton("Run Query");
-        JTextArea resultArea = new JTextArea(5, 20);
-        resultArea.setEditable(false);
-
-        runQueryButton.addActionListener(e -> {
-            String species = speciesTextField.getText().trim();
-            if (!species.isEmpty()) {
-                JSONArray result = db.getVeterinariansWhoWorkedWithAllOfSpecificSpecies(species);
-                resultArea.setText(result.toString(4));
-            } else {
-                JOptionPane.showMessageDialog(divisionFrame, "Please enter a species name.");
-            }
-        });
-
-        divisionPanel.add(speciesLabel);
-        divisionPanel.add(speciesTextField);
-        divisionPanel.add(runQueryButton);
-        divisionPanel.add(new JScrollPane(resultArea));
-
-        divisionFrame.add(divisionPanel);
-        divisionFrame.pack();
-        divisionFrame.setLocationRelativeTo(null);
-        divisionFrame.setVisible(true);
-    }
-
-
     private void initializeManagers() {
         // TODO: Add DB NAME and Change inputFieldMap use DB Field name as key
         // each entry = {DB_FIELD_NAME, DISPLAY_NAME, PLACE_HOLDER(optional)}
@@ -227,8 +185,7 @@ public class AquariumManagementUI extends JFrame {
 
 
         // Aggregation UI code
-        addAggregationPanel();
-        addDivisionPanel();
+//        addAggregationPanel();
 
 
     }
