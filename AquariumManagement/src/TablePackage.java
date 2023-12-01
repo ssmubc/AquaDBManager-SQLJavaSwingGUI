@@ -344,6 +344,55 @@ public class TablePackage {
         return searchCriteriaArray;
     }
 
+    public JPanel getButtonPanel() {
+        return this.buttonPanel;
+    }
+    private void clearTable(){
+        // Clear existing data from the table model
+        tableModel.setRowCount(0);
+        tableModel.setColumnCount(0);
+    }
+
+
+    public void updateTableWithPartialData(JSONArray dbData) {
+        clearTable();
+        if(dbData.isEmpty()){
+            noDataPopup();
+            return;
+        }
+        // get colNames from dbData
+        List<String> colNames = new ArrayList<>();
+        JSONObject firstRow = dbData.getJSONObject(0);
+        Iterator<String> keys = firstRow.keys();
+        columnInitialized = false;
+
+        // Add the column names to the table model
+        while (keys.hasNext()) {
+            String name = keys.next();
+            colNames.add(name);
+            tableModel.addColumn(name);
+        }
+
+
+        // Iterate through each entry in the dbData array
+        for (int i = 0; i < dbData.length(); i++) {
+            JSONObject rowObject = dbData.getJSONObject(i);
+            Vector<Object> row = new Vector<>();
+            for (String fieldName : colNames) {
+                row.add(rowObject.opt(fieldName));
+            }
+            // Add the row to the table model
+            tableModel.addRow(row);
+        }
+
+    }
+
+    public void noDataPopup() {
+        JOptionPane.showMessageDialog(packagePanel,
+                "No Data Found\n",
+                "No Data", JOptionPane.WARNING_MESSAGE);
+    }
+
 
 
 }
