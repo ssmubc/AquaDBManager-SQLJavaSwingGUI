@@ -269,7 +269,7 @@ public class AquariumManagementDB {
     }
 
     // REMOVE SHELF_ON_INVENTORY SINCE ORACLE SUPPORTS ON DELETE CASCADE
-    public boolean deleteInventory(int id, int shelfNumber) {
+    public boolean deleteInventory(int id) {
         String sql = "DELETE FROM INVENTORY WHERE ID = ?";
 
         try {
@@ -310,7 +310,7 @@ public class AquariumManagementDB {
                 int id = inventoryResult.getInt("ID");
                 String location = inventoryResult.getString("LOCATION");
                 int shelf_number = inventoryResult.getInt("SHELF_NUMBER");
-                int is_full = inventoryResult.getInt("IS_FULL");
+                String is_full = inventoryResult.getString("IS_FULL");
 
                 JSONObject inventoryItem = new JSONObject();
                 inventoryItem.put("ID", id);
@@ -353,11 +353,15 @@ public class AquariumManagementDB {
             while (inventoryResult.next()) {
                 int id = inventoryResult.getInt("ID");
                 String location = inventoryResult.getString("LOCATION");
+                int shelf_number = inventoryResult.getInt("SHELF_NUMBER");
+                String is_full = inventoryResult.getString("IS_FULL");
+
 
                 inventoryItem.put("ID", id);
                 inventoryItem.put("LOCATION", location);
+                inventoryItem.put("SHELF_NUMBER", shelf_number);
+                inventoryItem.put("IS_FULL", is_full);
 
-                System.out.println("ID: " + id + ", Location: " + location);
             }
 
             inventoryResult.close();
@@ -1080,10 +1084,9 @@ public class AquariumManagementDB {
     }
 
     public JSONArray listWaterTank() {
-        String sql = "SELECT wl.ID, wl.WATER_TANK_LOGISTICS_NAME, wl.VOLUME, wl.TEMPERATURE, wp.PH, wl.LIGHTINGLEVEL, wl.EXHIBIT_ID, m.AQUARIST_ID " +
+        String sql = "SELECT wl.ID, wl.WATER_TANK_LOGISTICS_NAME, wl.VOLUME, wl.TEMPERATURE, wp.PH, wl.LIGHTINGLEVEL, wl.EXHIBIT_ID " +
                 "FROM WATERTANKLOGISTICS wl " +
-                "JOIN WATERTANKPH wp ON wl.TEMPERATURE = wp.TEMPERATURE " +
-                "JOIN AQUARIST_MAINTAIN_WATERTANK m ON m.WATER_TANK_ID = wl.ID";
+                "JOIN WATERTANKPH wp ON wl.TEMPERATURE = wp.TEMPERATURE";
 
         JSONArray waterTankArray = new JSONArray();
 
@@ -1099,7 +1102,6 @@ public class AquariumManagementDB {
                 float pH = resultSet.getFloat("PH");
                 String lighting_level = resultSet.getString("LIGHTINGLEVEL");
                 int exhibit_id = resultSet.getInt("EXHIBIT_ID");
-                int aquarist_id = resultSet.getInt("AQUARIST_ID");
 
                 JSONObject waterTank = new JSONObject();
                 waterTank.put("ID", id);
@@ -1108,14 +1110,12 @@ public class AquariumManagementDB {
                 waterTank.put("PH", pH);
                 waterTank.put("LIGHTINGLEVEL", lighting_level);
                 waterTank.put("EXHIBIT_ID", exhibit_id);
-                waterTank.put("AQUARIST_ID", aquarist_id);
 
                 waterTankArray.put(waterTank);
 
 
                 System.out.println("ID: " + id + ", NAME: " + name + ", VOLUME: " + volume + ", TEMPERATURE: " + temperature +
-                        ", PH: " + pH + ", LIGHTINGLEVEL: " + lighting_level + ", EXHIBIT_ID: " + exhibit_id
-                        + " , AQUARIST_ID: " + aquarist_id);
+                        ", PH: " + pH + ", LIGHTINGLEVEL: " + lighting_level + ", EXHIBIT_ID: " + exhibit_id);
             }
 
             resultSet.close();
