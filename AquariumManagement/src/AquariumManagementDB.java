@@ -1371,7 +1371,7 @@ public class AquariumManagementDB {
     }
 
     // COVERS ENTITIES ANIMAL, FEED, EXHIBIT AND CLEAN (NEED TO FINISH CLEAN AND FEED)
-    public boolean insertAnimal(int id, String name, String species, int age, String living_temp, int waterTankID, int veterinarianID) {
+    public boolean insertAnimal(int id, String name, String species, int age, float living_temp, int waterTankID, int veterinarianID) {
         String sql = "INSERT INTO ANIMAL (ID, ANIMAL_NAME, SPECIES, AGE, LIVINGTEMP, WATER_TANK_ID, VETERINARIAN_ID) VALUES (?, ?, ?, ?, ?, ?, ?)";
 
         try {
@@ -1381,7 +1381,7 @@ public class AquariumManagementDB {
             preparedStatement.setString(2, name);
             preparedStatement.setString(3, species);
             preparedStatement.setInt(4, age);
-            preparedStatement.setString(5, living_temp);
+            preparedStatement.setFloat(5, living_temp);
             preparedStatement.setInt(6, waterTankID);
             preparedStatement.setInt(7, veterinarianID);
 
@@ -1487,7 +1487,7 @@ public class AquariumManagementDB {
         }
     }
 
-    public boolean updateAnimal(int id, String name, String species, int age, String living_temp, int waterTankID, int veterinarianID) {
+    public boolean updateAnimal(int id, String name, String species, int age, float living_temp, int waterTankID, int veterinarianID) {
         String sql = "UPDATE ANIMAL SET ANIMAL_NAME = ?, SPECIES = ?, AGE = ?, LIVINGTEMP = ?, WATER_TANK_ID = ?, VETERINARIAN_ID = ? WHERE ID = ?";
 
         try {
@@ -1497,7 +1497,7 @@ public class AquariumManagementDB {
             preparedStatement.setString(1, name);
             preparedStatement.setString(2, species);
             preparedStatement.setInt(3, age);
-            preparedStatement.setString(4, living_temp);
+            preparedStatement.setFloat(4, living_temp);
             preparedStatement.setInt(5, waterTankID);
             preparedStatement.setInt(6, veterinarianID);
             preparedStatement.setInt(7, id);
