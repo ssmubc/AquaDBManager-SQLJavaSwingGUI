@@ -40,6 +40,7 @@ public class AquariumManagementUI extends JFrame {
         tablePackages.add(new TablePackage(this::showHome,"Inventories", db::listInventory));
         tablePackages.add(new TablePackage(this::showHome,"Items", db::listItems));
 
+        TablePackage equipTablePkg = new TablePackage(this::showHome,"Equipment", db::listEquipment);
         TablePackage tankTablePkg = new TablePackage(this::showHome,"Tank", db::listWaterTank);
         TablePackage staffTablePkg = new TablePackage(this::showHome,"Staffs", db::listStaff);
         TablePackage animalTablePkg = new TablePackage(this::showHome,"Animals", db::listAnimal);
@@ -47,15 +48,30 @@ public class AquariumManagementUI extends JFrame {
 
 
         tankTablePkg.setAdvancedSearch(getTankFields());
+        equipTablePkg.getButtonPanel().add(equipBySizeBtn(equipTablePkg));
         animalTablePkg.getButtonPanel().add(findAnimalExpertBtn(animalTablePkg));
+
 
         tablePackages.add(staffTablePkg);
         tablePackages.add(animalTablePkg);
+        tablePackages.add(equipTablePkg);
         tablePackages.add(tankTablePkg);
 
 
     }
 
+    private JButton equipBySizeBtn(TablePackage tp){
+        JButton btn = new JButton("Counts By Size");
+        btn.addActionListener(e -> {
+                JSONArray dbData = db.groupByEquipmentSize();
+                if (dbData == null || dbData.isEmpty()) {
+                    tp.noDataPopup();
+                } else {
+                    tp.updateTableWithAnyData(dbData);
+                }
+            });
+        return btn;
+    }
     private JButton findAnimalExpertBtn(TablePackage tp) {
         JButton btn = new JButton("Find Expert Vet");
 

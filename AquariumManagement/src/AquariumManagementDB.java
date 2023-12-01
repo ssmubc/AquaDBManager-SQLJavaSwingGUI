@@ -787,7 +787,7 @@ public class AquariumManagementDB {
         }
     }
 
-    public JSONArray listEquipment(int id) {
+    public JSONArray listEquipment() {
         String sql = "SELECT e.ITEM_ID, e.EQUIPMENT_FUNCTION, e.WEIGHT, E.EQUIPMENT_SIZE, e.DATE_INSTALLED " +
                 "FROM EQUIPMENT e";
 
