@@ -44,7 +44,7 @@ public class TablePackage {
         packagePanel.add(new JScrollPane(table), BorderLayout.CENTER);
         buttonPanel = new JPanel();
         JButton backButton = new JButton("Back to Home");
-        JButton listAllButton = new JButton("Update All "+name);
+        JButton listAllButton = new JButton("Show All "+name);
         listAllButton.addActionListener(e -> populateTable());
 
 
@@ -83,9 +83,7 @@ public class TablePackage {
 
     public void populateTable() {
         //clear table
-        while (tableModel.getRowCount() > 0) {
-            tableModel.removeRow(0);
-        }
+        clearTable();
         
         JSONArray dataArray = dataSupplier.get();
         if (dataArray != null && !dataArray.isEmpty()) {
@@ -94,12 +92,11 @@ public class TablePackage {
             Set<String> columnNames = firstRowObject.keySet();
 
             // add column names
-            if(!columnInitialized){
-                for (String columnName : columnNames) {
-                    tableModel.addColumn(columnName);
-                }
-                columnInitialized = true;
+            
+            for (String columnName : columnNames) {
+                tableModel.addColumn(columnName);
             }
+
 
 
             // Populate rows
@@ -114,7 +111,7 @@ public class TablePackage {
         }
     }
 
-    public void updateTableWithData(JSONArray dbData) {
+    public void updateTableWithAllData(JSONArray dbData) {
         // Check if columns need to be initialized
         if (!columnInitialized) {
             for (String columnName : DBfieldNames) {
@@ -175,7 +172,7 @@ public class TablePackage {
                         + "{\"ID\": 3, \"WATER_TANK_LOGISTICS_NAME\": \"Tank C\", \"VOLUME\": 600.0, \"TEMPERATURE\": 23.5, \"LIGHTINGLEVEL\": \"Low\", \"EXHIBIT_ID\": 103, \"PH\": 7.1, \"AQUARIST_ID\": 203}"
                         + "]";
                 JSONArray testDbDataArray = new JSONArray(testDbData);
-                updateTableWithData(testDbDataArray);
+                updateTableWithAllData(testDbDataArray);
 
             }
         });
@@ -354,7 +351,7 @@ public class TablePackage {
     }
 
 
-    public void updateTableWithPartialData(JSONArray dbData) {
+    public void updateTableWithAnyData(JSONArray dbData) {
         clearTable();
         if(dbData.isEmpty()){
             noDataPopup();
