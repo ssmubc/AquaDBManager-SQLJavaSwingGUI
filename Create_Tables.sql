@@ -191,6 +191,15 @@ COMMIT;
 INSERT INTO Animal(id, animal_name, Species, Age, LivingTemp, water_tank_id, veterinarian_id)
 VALUES (35, 'Aldabra giant tortoise', 'Aldabrachelys gigantea', 1, 27.5, 5, 105);
 COMMIT;
+INSERT INTO Animal(id, animal_name, Species, Age, LivingTemp, water_tank_id, veterinarian_id)
+VALUES (36, 'wrasse', 'Humphead wrasse', 1, 27.8, 5, 105);
+COMMIT;
+INSERT INTO Animal(id, animal_name, Species, Age, LivingTemp, water_tank_id, veterinarian_id)
+VALUES (37, 'Phinius', 'Fin Whale', 4, 27.8, 5, 105);
+COMMIT;
+INSERT INTO Animal(id, animal_name, Species, Age, LivingTemp, water_tank_id, veterinarian_id)
+VALUES (38, 'Benjamin', 'Beluga Whale', 3, 27.7, 5, 105);
+COMMIT;
 
 
 CREATE TABLE Inventory (
