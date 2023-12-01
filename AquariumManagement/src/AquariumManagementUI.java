@@ -141,24 +141,24 @@ public class AquariumManagementUI extends JFrame {
     }
 
     private void addManagePlant() {
-        String[][] fieldNames = {{"Plant_ID","ID", "True", "Enter ID"}, {"Species", "Species", "True"},
-                {"Living_Temp", "Living Temperature(°C)", "True", "Enter Number"},
-                {"Water_Tank_ID","In Water Tank(ID)", "True"}, {"Living_Light", "Light Level", "True"}};
+        String[][] fieldNames = {{"PLANT_ID","ID", "True", "Enter ID"}, {"SPECIES", "Species", "True"},
+                {"LIVING_TEMP", "Living Temperature(°C)", "True", "Enter Number"},
+                {"WATER_TANK_ID","In Water Tank(ID)", "True"}, {"LIVING_LIGHT", "Light Level", "True"}};
         ManagerPanelPackage panelPkg = new ManagerPanelPackage("Plant", fieldNames);
         // Search
-        panelPkg.addSearchAction("Plant_ID", db::getPlantByID);
+        panelPkg.addSearchAction("PLANT_ID", db::getPlantByID);
         // Delete
-        panelPkg.addDeleteAction("Plant_ID", db::deletePlant);
+        panelPkg.addDeleteAction("PLANT_ID", db::deletePlant);
         // Add
         panelPkg.getAddButton().addActionListener(e -> {
             if(panelPkg.checkMandatoryFields()){
                 try{
-                    int id = Integer.parseInt(panelPkg.getFieldText("Plant_ID"));
+                    int id = Integer.parseInt(panelPkg.getFieldText("PLANT_ID"));
                     boolean success = db.insertPlant(id,
-                            panelPkg.getFieldText("Species"),
-                            Float.parseFloat(panelPkg.getFieldText("Living_Temp")),
-                            Float.parseFloat(panelPkg.getFieldText("Living_Light")),
-                            Integer.parseInt(panelPkg.getFieldText("Water_Tank_ID"))
+                            panelPkg.getFieldText("SPECIES"),
+                            Float.parseFloat(panelPkg.getFieldText("LIVING_TEMP")),
+                            Float.parseFloat(panelPkg.getFieldText("LIVING_LIGHT")),
+                            Integer.parseInt(panelPkg.getFieldText("WATER_TANK_ID"))
                     );
                     if(success){
                         panelPkg.insertSuccessPopup(id);
