@@ -1,7 +1,6 @@
 package AquariumManagement.src;
 
 import org.json.JSONArray;
-import org.json.JSONObject;
 
 import javax.swing.*;
 import java.awt.*;
@@ -35,77 +34,15 @@ public class AquariumManagementUI extends JFrame {
     TODO: change this to parse data read from DB instead of hard coding if time allows
      */
     private void initializeTablePackages() {
-        tablePackages.add(new TablePackage(this::showHome,"Plants", db::listPlants));
-        tablePackages.add(new TablePackage(this::showHome,"Vendors", db::listVendors));
-        tablePackages.add(new TablePackage(this::showHome,"Inventories", db::listInventory));
-        tablePackages.add(new TablePackage(this::showHome,"Items", db::listItems));
-
+        tablePackages.add(new TablePackage(this::showHome,"Plant", db::listPlants));
+        tablePackages.add(new TablePackage(this::showHome,"Vendor", db::listVendors));
+        tablePackages.add(new TablePackage(this::showHome,"Inventory", db::listInventory));
+        tablePackages.add(new TablePackage(this::showHome,"Animal", db::listAnimal));
         TablePackage tankTablePkg = new TablePackage(this::showHome,"Tank", db::listWaterTank);
-        TablePackage staffTablePkg = new TablePackage(this::showHome,"Staffs", db::listStaff);
-        TablePackage animalTablePkg = new TablePackage(this::showHome,"Animals", db::listAnimal);
 
-
-
-        tankTablePkg.setAdvancedSearch(getTankFields());
-        animalTablePkg.getButtonPanel().add(findAnimalExpertBtn(animalTablePkg));
-
-        tablePackages.add(staffTablePkg);
-        tablePackages.add(animalTablePkg);
         tablePackages.add(tankTablePkg);
+        tankTablePkg.setAdvancedSearch(getTankFields());
 
-
-    }
-
-    private JButton findAnimalExpertBtn(TablePackage tp) {
-        JButton btn = new JButton("Find Expert Vet");
-
-        btn.addActionListener(e -> {
-            JDialog dialog = new JDialog();
-            dialog.setTitle("Find Expert Vet");
-            dialog.setLayout(new BorderLayout());
-            dialog.setSize(300, 150);
-
-            JPanel inputPanel = new JPanel();
-            JTextField speciesField = new JTextField(20);
-            inputPanel.add(new JLabel("Species Name:"));
-            inputPanel.add(speciesField);
-
-            JPanel buttonPanel = new JPanel();
-            JButton findButton = new JButton("Find");
-            JButton cancelButton = new JButton("Cancel");
-
-            findButton.addActionListener(ev -> {
-                String species = speciesField.getText();
-                JSONArray dbData = db.getAnimalExpertVets(species);
-                if (dbData == null || dbData.isEmpty()) {
-                    JOptionPane.showMessageDialog(dialog, "No experts found for " + species, "Result", JOptionPane.INFORMATION_MESSAGE);
-                } else {
-                    tp.updateTableWithAnyData(dbData);
-                }
-
-                dialog.dispose();
-            });
-
-            // Add action listener to cancelButton
-            cancelButton.addActionListener(ev -> dialog.dispose());
-
-            buttonPanel.add(findButton);
-            buttonPanel.add(cancelButton);
-
-            dialog.add(inputPanel, BorderLayout.CENTER);
-            dialog.add(buttonPanel, BorderLayout.SOUTH);
-            dialog.setVisible(true);
-        });
-
-        return btn;
-    }
-
-    private JButton getHighSalaryBtn(){
-        JButton btn = new JButton("Find High Salary");
-
-
-
-        return btn;
     }
 
     private JSONArray getTankFields(){
@@ -168,6 +105,48 @@ public class AquariumManagementUI extends JFrame {
         aggregationFrame.setVisible(true);
     }
 
+    private void addDivisionPanel() {
+        JButton divisionButton = new JButton("Division Query");
+        divisionButton.setPreferredSize(buttonSize);
+        divisionButton.addActionListener(e -> createAndShowDivisionPanel());
+        getContentPane().add(divisionButton, BorderLayout.SOUTH);
+    }
+
+    private void createAndShowDivisionPanel() {
+        JFrame divisionFrame = new JFrame("Veterinarians for All of Specific Species");
+        divisionFrame.setSize(400, 200);
+        JPanel divisionPanel = new JPanel();
+        divisionPanel.setLayout(new GridLayout(0, 1));
+
+        JLabel speciesLabel = new JLabel("Enter Species:");
+        JTextField speciesTextField = new JTextField(10);
+
+        JButton runQueryButton = new JButton("Run Query");
+        JTextArea resultArea = new JTextArea(5, 20);
+        resultArea.setEditable(false);
+
+        runQueryButton.addActionListener(e -> {
+            String species = speciesTextField.getText().trim();
+            if (!species.isEmpty()) {
+                JSONArray result = db.getVeterinariansWhoWorkedWithAllOfSpecificSpecies(species);
+                resultArea.setText(result.toString(4));
+            } else {
+                JOptionPane.showMessageDialog(divisionFrame, "Please enter a species name.");
+            }
+        });
+
+        divisionPanel.add(speciesLabel);
+        divisionPanel.add(speciesTextField);
+        divisionPanel.add(runQueryButton);
+        divisionPanel.add(new JScrollPane(resultArea));
+
+        divisionFrame.add(divisionPanel);
+        divisionFrame.pack();
+        divisionFrame.setLocationRelativeTo(null);
+        divisionFrame.setVisible(true);
+    }
+
+
     private void initializeManagers() {
         // TODO: Add DB NAME and Change inputFieldMap use DB Field name as key
         // each entry = {DB_FIELD_NAME, DISPLAY_NAME, PLACE_HOLDER(optional)}
@@ -185,20 +164,57 @@ public class AquariumManagementUI extends JFrame {
 
 
         // Aggregation UI code
-//        addAggregationPanel();
+        addAggregationPanel();
+        addDivisionPanel();
 
 
     }
 
     private void addManageInventory() {
-        String[][] fieldNames = {{"ID","ID", "True", "Enter ID"},{"LOCATION", "Location", "False", "Enter Location"}};
+        String[][] fieldNames = {{"ID","ID", "True", "Enter ID"},{"LOCATION", "Location", "True", "Enter Location"},
+                {"SHELF_NUMBER", "Shelf Number", "True", "Enter Shelf_Number"}, {"IS_FULL", "Is_Full", "True", "Enter State"}};
+
         ManagerPanelPackage InventoryManager = new ManagerPanelPackage("Inventory", fieldNames);
-        InventoryManager.getSearchButton().addActionListener(e -> {
-            int id =  Integer.parseInt(InventoryManager.getFieldText("ID"));
-            JSONObject dataFound = db.getInventoryByID(id);
-            System.out.println(db.getInventoryByID(id).toString());
-            InventoryManager.showDbData(dataFound);
+        //Delete
+        InventoryManager.addDeleteAction("ID", db::deleteInventory);
+        // Add
+        InventoryManager.getAddButton().addActionListener(e -> {
+            if(InventoryManager.checkMandatoryFields()){
+                try{
+                    int id = Integer.parseInt(InventoryManager.getFieldText("ID"));
+                    boolean success = db.insertInventory(id,
+                            InventoryManager.getFieldText("LOCATION"),
+                            InventoryManager.getFieldAsInt("SHELF_NUMBER"),
+                            InventoryManager.getFieldText("IS_FULL")
+                    );
+                    if(success){
+                        InventoryManager.insertSuccessPopup(id);
+                    }
+                } catch (NumberFormatException err) {
+                    InventoryManager.invalidDataPopup();
+                }
+            }
         });
+        // Update
+        InventoryManager.getUpdateButton().addActionListener(e -> {
+            if(InventoryManager.checkMandatoryFields()){
+                try{
+                    int id = Integer.parseInt(InventoryManager.getFieldText("ID"));
+                    boolean success = db.updateInventory(id,
+                            InventoryManager.getFieldText("LOCATION"),
+                            InventoryManager.getFieldAsInt("SHELF_NUMBER"),
+                            InventoryManager.getFieldText("IS_FULL")
+                    );
+                    if(success){
+                        InventoryManager.insertSuccessPopup(id);
+                    }
+                } catch (NumberFormatException err) {
+                    InventoryManager.invalidDataPopup();
+                }
+            }
+        });
+
+        InventoryManager.addSearchAction("ID", db::getInventoryByID);
         managerPanelPackageMap.put("Inventory",InventoryManager);
     }
 
@@ -242,7 +258,7 @@ public class AquariumManagementUI extends JFrame {
                             panelPkg.getFieldText("ANIMAL_NAME"),
                             panelPkg.getFieldText("SPECIES"),
                             panelPkg.getFieldAsInt("AGE"),
-                            panelPkg.getFieldAsFloat("LIVINGTEMP"),
+                            panelPkg.getFieldText("LIVINGTEMP"),
                             panelPkg.getFieldAsInt("WATER_TANK_ID"),
                             panelPkg.getFieldAsInt("VETERINARIAN_ID")
                     );
@@ -259,24 +275,24 @@ public class AquariumManagementUI extends JFrame {
     }
 
     private void addManagePlant() {
-        String[][] fieldNames = {{"PLANT_ID","ID", "True", "Enter ID"}, {"SPECIES", "Species", "True"},
-                {"LIVING_TEMP", "Living Temperature(°C)", "True", "Enter Number"},
-                {"WATER_TANK_ID","In Water Tank(ID)", "True"}, {"LIVING_LIGHT", "Light Level", "True"}};
+        String[][] fieldNames = {{"Plant_ID","ID", "True", "Enter ID"}, {"Species", "Species", "True"},
+                {"Living_Temp", "Living Temperature(°C)", "True", "Enter Number"},
+                {"Water_Tank_ID","In Water Tank(ID)", "True"}, {"Living_Light", "Light Level", "True"}};
         ManagerPanelPackage panelPkg = new ManagerPanelPackage("Plant", fieldNames);
         // Search
-        panelPkg.addSearchAction("PLANT_ID", db::getPlantByID);
+        panelPkg.addSearchAction("Plant_ID", db::getPlantByID);
         // Delete
-        panelPkg.addDeleteAction("PLANT_ID", db::deletePlant);
+        panelPkg.addDeleteAction("Plant_ID", db::deletePlant);
         // Add
         panelPkg.getAddButton().addActionListener(e -> {
             if(panelPkg.checkMandatoryFields()){
                 try{
-                    int id = Integer.parseInt(panelPkg.getFieldText("PLANT_ID"));
+                    int id = Integer.parseInt(panelPkg.getFieldText("Plant_ID"));
                     boolean success = db.insertPlant(id,
-                            panelPkg.getFieldText("SPECIES"),
-                            Float.parseFloat(panelPkg.getFieldText("LIVING_TEMP")),
-                            Float.parseFloat(panelPkg.getFieldText("LIVING_LIGHT")),
-                            Integer.parseInt(panelPkg.getFieldText("WATER_TANK_ID"))
+                            panelPkg.getFieldText("Species"),
+                            Float.parseFloat(panelPkg.getFieldText("Living_Temp")),
+                            Float.parseFloat(panelPkg.getFieldText("Living_Light")),
+                            Integer.parseInt(panelPkg.getFieldText("Water_Tank_ID"))
                     );
                     if(success){
                         panelPkg.insertSuccessPopup(id);
@@ -706,7 +722,5 @@ public class AquariumManagementUI extends JFrame {
             JOptionPane.showMessageDialog(DBframe, "Failed to close connection to Oracle DB.");
         }
     };
-
-
 
 }
