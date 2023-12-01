@@ -33,15 +33,77 @@ public class AquariumManagementUI extends JFrame {
     TODO: change this to parse data read from DB instead of hard coding if time allows
      */
     private void initializeTablePackages() {
-        tablePackages.add(new TablePackage(this::showHome,"Plant", db::listPlants));
-        tablePackages.add(new TablePackage(this::showHome,"Vendor", db::listVendors));
-        tablePackages.add(new TablePackage(this::showHome,"Inventory", db::listInventory));
-        tablePackages.add(new TablePackage(this::showHome,"Animal", db::listAnimal));
+        tablePackages.add(new TablePackage(this::showHome,"Plants", db::listPlants));
+        tablePackages.add(new TablePackage(this::showHome,"Vendors", db::listVendors));
+        tablePackages.add(new TablePackage(this::showHome,"Inventories", db::listInventory));
+        tablePackages.add(new TablePackage(this::showHome,"Items", db::listItems));
+
         TablePackage tankTablePkg = new TablePackage(this::showHome,"Tank", db::listWaterTank);
+        TablePackage staffTablePkg = new TablePackage(this::showHome,"Staffs", db::listStaff);
+        TablePackage animalTablePkg = new TablePackage(this::showHome,"Animals", db::listAnimal);
 
-        tablePackages.add(tankTablePkg);
+
+
         tankTablePkg.setAdvancedSearch(getTankFields());
+        animalTablePkg.getButtonPanel().add(findAnimalExpertBtn(animalTablePkg));
 
+        tablePackages.add(staffTablePkg);
+        tablePackages.add(animalTablePkg);
+        tablePackages.add(tankTablePkg);
+
+
+    }
+
+    private JButton findAnimalExpertBtn(TablePackage tp) {
+        JButton btn = new JButton("Find Expert Vet");
+
+        btn.addActionListener(e -> {
+            JDialog dialog = new JDialog();
+            dialog.setTitle("Find Expert Vet");
+            dialog.setLayout(new BorderLayout());
+            dialog.setSize(300, 150);
+
+            JPanel inputPanel = new JPanel();
+            JTextField speciesField = new JTextField(20);
+            inputPanel.add(new JLabel("Species Name:"));
+            inputPanel.add(speciesField);
+
+            JPanel buttonPanel = new JPanel();
+            JButton findButton = new JButton("Find");
+            JButton cancelButton = new JButton("Cancel");
+
+            findButton.addActionListener(ev -> {
+                String species = speciesField.getText();
+                JSONArray dbData = db.getAnimalExpertVets(species);
+                if (dbData == null || dbData.isEmpty()) {
+                    JOptionPane.showMessageDialog(dialog, "No experts found for " + species, "Result", JOptionPane.INFORMATION_MESSAGE);
+                } else {
+                    tp.updateTableWithAnyData(dbData);
+                }
+
+                dialog.dispose();
+            });
+
+            // Add action listener to cancelButton
+            cancelButton.addActionListener(ev -> dialog.dispose());
+
+            buttonPanel.add(findButton);
+            buttonPanel.add(cancelButton);
+
+            dialog.add(inputPanel, BorderLayout.CENTER);
+            dialog.add(buttonPanel, BorderLayout.SOUTH);
+            dialog.setVisible(true);
+        });
+
+        return btn;
+    }
+
+    private JButton getHighSalaryBtn(){
+        JButton btn = new JButton("Find High Salary");
+
+
+
+        return btn;
     }
 
     private JSONArray getTankFields(){
@@ -103,7 +165,7 @@ public class AquariumManagementUI extends JFrame {
                             panelPkg.getFieldText("ANIMAL_NAME"),
                             panelPkg.getFieldText("SPECIES"),
                             panelPkg.getFieldAsInt("AGE"),
-                            panelPkg.getFieldText("LIVINGTEMP"),
+                            panelPkg.getFieldAsFloat("LIVINGTEMP"),
                             panelPkg.getFieldAsInt("WATER_TANK_ID"),
                             panelPkg.getFieldAsInt("VETERINARIAN_ID")
                     );
@@ -124,7 +186,7 @@ public class AquariumManagementUI extends JFrame {
                             panelPkg.getFieldText("ANIMAL_NAME"),
                             panelPkg.getFieldText("SPECIES"),
                             panelPkg.getFieldAsInt("AGE"),
-                            panelPkg.getFieldText("LIVINGTEMP"),
+                            panelPkg.getFieldAsFloat("LIVINGTEMP"),
                             panelPkg.getFieldAsInt("WATER_TANK_ID"),
                             panelPkg.getFieldAsInt("VETERINARIAN_ID")
                     );
@@ -394,5 +456,7 @@ public class AquariumManagementUI extends JFrame {
             JOptionPane.showMessageDialog(DBframe, "Failed to close connection to Oracle DB.");
         }
     };
+
+
 
 }
