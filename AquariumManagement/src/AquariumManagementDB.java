@@ -2541,6 +2541,21 @@ public class AquariumManagementDB {
     // FUNCTION FOR "Queries: Division"
     // Veterinarians Who Worked With All Of Specific Species
     public JSONArray getAnimalExpertVets(String species) {
+        JSONArray veterinariansJSONArray = new JSONArray();
+
+        // Check if the species exists in the ANIMAL table
+        String checkSpeciesSql = "SELECT COUNT(*) FROM ANIMAL WHERE SPECIES = ?";
+        try (PreparedStatement checkSpeciesStmt = connection.prepareStatement(checkSpeciesSql)) {
+            checkSpeciesStmt.setString(1, species);
+            ResultSet checkSpeciesRs = checkSpeciesStmt.executeQuery();
+            if (checkSpeciesRs.next() && checkSpeciesRs.getInt(1) == 0) {
+                return veterinariansJSONArray;
+            }
+        } catch (SQLException e) {
+            System.out.println("Species check failed: " + e.getMessage());
+            return veterinariansJSONArray;
+        }
+
         String sql = "SELECT v.ID " +
                 "FROM VETERINARIAN v " +
                 "WHERE NOT EXISTS (" +
@@ -2553,8 +2568,6 @@ public class AquariumManagementDB {
                 "WHERE a2.VETERINARIAN_ID = v.ID AND a2.SPECIES = ?" +
                 "))";
 
-        JSONArray veterinariansJSONArray = new JSONArray();
-
         try {
             PreparedStatement preparedStatement = connection.prepareStatement(sql);
             preparedStatement.setString(1, species);
@@ -2564,7 +2577,7 @@ public class AquariumManagementDB {
             while (resultSet.next()) {
                 JSONObject veterinarian = new JSONObject();
                 veterinarian.put("Veterinarian_Id", resultSet.getInt("ID"));
-                veterinarian.put("Animal_Name", species);
+                veterinarian.put("Species", species);
 
                 veterinariansJSONArray.put(veterinarian);
             }
