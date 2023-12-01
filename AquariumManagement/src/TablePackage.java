@@ -44,9 +44,13 @@ public class TablePackage {
         packagePanel.add(new JScrollPane(table), BorderLayout.CENTER);
         buttonPanel = new JPanel();
         JButton backButton = new JButton("Back to Home");
+        JButton listAllButton = new JButton("Update All "+name);
+        listAllButton.addActionListener(e -> populateTable());
+
 
         backButton.addActionListener(e -> showHome.run());
         buttonPanel.add(backButton);
+        buttonPanel.add(listAllButton);
 
         packagePanel.add(buttonPanel, BorderLayout.SOUTH);
     }
