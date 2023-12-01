@@ -2539,7 +2539,8 @@ public class AquariumManagementDB {
 
     // Citation: Studied:https://www.geeksforgeeks.org/sql-division/
     // FUNCTION FOR "Queries: Division"
-    public JSONArray getVeterinariansWhoWorkedWithAllOfSpecificSpecies(String species) {
+    // Veterinarians Who Worked With All Of Specific Species
+    public JSONArray getAnimalExpertVets(String species) {
         String sql = "SELECT v.ID " +
                 "FROM VETERINARIAN v " +
                 "WHERE NOT EXISTS (" +
@@ -2562,7 +2563,8 @@ public class AquariumManagementDB {
 
             while (resultSet.next()) {
                 JSONObject veterinarian = new JSONObject();
-                veterinarian.put("ID", resultSet.getInt("ID"));
+                veterinarian.put("Veterinarian_Id", resultSet.getInt("ID"));
+                veterinarian.put("Animal_Name", species);
 
                 veterinariansJSONArray.put(veterinarian);
             }
