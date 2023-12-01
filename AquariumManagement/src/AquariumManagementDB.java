@@ -947,8 +947,11 @@ public class AquariumManagementDB {
             preparedStatement3.setInt(2, id);
 
             preparedStatement1.executeUpdate();
+            System.out.println("SQL 1 WORKS");
             preparedStatement2.executeUpdate();
+            System.out.println("SQL 2 WORKS");
             preparedStatement3.executeUpdate();
+            System.out.println("SQL 3 WORKS");
 
             connection.commit();
 
@@ -1084,9 +1087,10 @@ public class AquariumManagementDB {
     }
 
     public JSONArray listWaterTank() {
-        String sql = "SELECT wl.ID, wl.WATER_TANK_LOGISTICS_NAME, wl.VOLUME, wl.TEMPERATURE, wp.PH, wl.LIGHTINGLEVEL, wl.EXHIBIT_ID " +
+        String sql = "SELECT wl.ID, wl.WATER_TANK_LOGISTICS_NAME, wl.VOLUME, wl.TEMPERATURE, wp.PH, wl.LIGHTINGLEVEL, wl.EXHIBIT_ID, m.AQUARIST_ID " +
                 "FROM WATERTANKLOGISTICS wl " +
-                "JOIN WATERTANKPH wp ON wl.TEMPERATURE = wp.TEMPERATURE";
+                "JOIN WATERTANKPH wp ON wl.TEMPERATURE = wp.TEMPERATURE " +
+                "JOIN AQUARIST_MAINTAIN_WATERTANK m ON m.WATER_TANK_ID = wl.ID ";
 
         JSONArray waterTankArray = new JSONArray();
 
@@ -1102,6 +1106,7 @@ public class AquariumManagementDB {
                 float pH = resultSet.getFloat("PH");
                 String lighting_level = resultSet.getString("LIGHTINGLEVEL");
                 int exhibit_id = resultSet.getInt("EXHIBIT_ID");
+                int aquarist_id = resultSet.getInt("AQUARIST_ID");
 
                 JSONObject waterTank = new JSONObject();
                 waterTank.put("ID", id);
@@ -1110,12 +1115,14 @@ public class AquariumManagementDB {
                 waterTank.put("PH", pH);
                 waterTank.put("LIGHTINGLEVEL", lighting_level);
                 waterTank.put("EXHIBIT_ID", exhibit_id);
+                waterTank.put("AQUARIST_ID", aquarist_id);
 
                 waterTankArray.put(waterTank);
 
 
                 System.out.println("ID: " + id + ", NAME: " + name + ", VOLUME: " + volume + ", TEMPERATURE: " + temperature +
-                        ", PH: " + pH + ", LIGHTINGLEVEL: " + lighting_level + ", EXHIBIT_ID: " + exhibit_id);
+                        ", PH: " + pH + ", LIGHTINGLEVEL: " + lighting_level + ", EXHIBIT_ID: " + exhibit_id +
+                        ", AQUARIST_ID: " + aquarist_id);
             }
 
             resultSet.close();
@@ -1193,15 +1200,16 @@ public class AquariumManagementDB {
         // construct SELECT query
         StringBuilder sql = new StringBuilder("SELECT wl.ID, wl.WATER_TANK_LOGISTICS_NAME, wl.VOLUME, wl.TEMPERATURE, wp.PH, wl.LIGHTINGLEVEL, wl.EXHIBIT_ID, m.AQUARIST_ID " +
                 "FROM WATERTANKLOGISTICS wl " +
-                "JOIN WATERTANKPH wp ON wl.TEMPERATURE = wp.TEMPERATURE");
+                "JOIN WATERTANKPH wp ON wl.TEMPERATURE = wp.TEMPERATURE " +
+                "JOIN AQUARIST_MAINTAIN_WATERTANK m ON m.WATER_TANK_ID = wl.ID");
+
+        // create an array for AND conditions and OR conditions
+        JSONArray andCondArray = new JSONArray();
+        JSONArray orCondArray = new JSONArray();
 
         // Check if conditions are provided
         if (waterTankConditions != null) {
             JSONArray selectionArray = waterTankConditions;
-
-            // create an array for AND conditions and OR conditions
-            JSONArray andCondArray = new JSONArray();
-            JSONArray orCondArray = new JSONArray();
 
             for (int i = 0; i < selectionArray.length(); i++) {
                 JSONObject condition = selectionArray.getJSONObject(i);
@@ -1220,11 +1228,15 @@ public class AquariumManagementDB {
                     if (i > 0) {
                         sql.append(" AND ");
                     }
-                    sql.append("(")
-                            .append(cond.getString("Name"))
+                    sql.append(cond.getString("Name"))
                             .append(" ")
-                            .append(cond.getString("Comparison"))
-                            .append(" ?)");
+                            .append(cond.getString("Comparison")).append(" ");
+
+                    if (containsOnlyAlphabets(cond.getString("Value"))) {
+                        sql.append("'").append(cond.getString("Value")).append("'");
+                    } else {
+                        sql.append(cond.getString("Value"));
+                    }
                 }
             }
 
@@ -1237,11 +1249,16 @@ public class AquariumManagementDB {
                 }
                 for (int i = 0; i < orCondArray.length(); i++) {
                     JSONObject cond = orCondArray.getJSONObject(i);
-                    sql.append("(")
-                            .append(cond.getString("Name"))
+                    sql.append(cond.getString("Name"))
                             .append(" ")
                             .append(cond.getString("Comparison"))
-                            .append(" ?)");
+                            .append(" ");
+                    // checks for alphabet comparisons
+                    if (containsOnlyAlphabets(cond.getString("Value"))) {
+                        sql.append("'").append(cond.getString("Value")).append("'");
+                    } else {
+                        sql.append(cond.getString("Value"));
+                    }
                     if (i < orCondArray.length() - 1) {
                         sql.append(" OR ");
                     }
@@ -1251,19 +1268,13 @@ public class AquariumManagementDB {
 
         JSONArray waterTankArray = new JSONArray();
 
-        try (PreparedStatement statement = connection.prepareStatement(sql.toString())) {
-            // Set parameter values based on the JSONObject
-            if (waterTankConditions != null) {
-                JSONArray selectionArray = waterTankConditions;
-                int parameterIndex = 1;
-                for (int i = 0; i < selectionArray.length(); i++) {
-                    JSONObject condition = selectionArray.getJSONObject(i);
-                    statement.setObject(parameterIndex, condition.getString("Value"));
-                    parameterIndex += 1;
-                }
-            }
+        System.out.println(sql.toString());
 
+        try (PreparedStatement statement = connection.prepareStatement(sql.toString())) {
+            System.out.println("prepare statement works");
+            System.out.println("before result");
             ResultSet resultSet = statement.executeQuery();
+            System.out.println("after result");
 
             while (resultSet.next()) {
                 int water_tank_id = resultSet.getInt("ID");
@@ -1305,6 +1316,12 @@ public class AquariumManagementDB {
             return null;
         }
         return waterTankArray;
+    }
+
+    // Source:
+    public boolean containsOnlyAlphabets(String str) {
+        // Use a regular expression to check if the string contains only alphabets
+        return str.matches("[a-zA-Z\\s]+");
     }
 
     public String selectWaterTankTest(JSONArray waterTankConditions) {

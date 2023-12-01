@@ -606,7 +606,7 @@ public class AquariumManagementUI extends JFrame {
         String[][] fieldNames = {{"ID","ID", "True", "Enter ID"},
                 {"WATER_TANK_LOGISTICS_NAME", "Name", "True","Enter Name"},
                 {"VOLUME", "Volume(l)","True"}, {"TEMPERATURE", "Temperature(°C)", "True"},
-                {"LIGHTINGLEVEL", "Lighting Level", "True", "Enter Number"},
+                {"LIGHTINGLEVEL", "Lighting Level", "True"},
                 {"EXHIBIT_ID","In Exhibit(ID)", "True"},
                 {"PH","Ph", "True"}, {"AQUARIST_ID","Aquarist Assigned(ID)", "True"}};
         ManagerPanelPackage panelPkg = new ManagerPanelPackage("WaterTank", fieldNames);
