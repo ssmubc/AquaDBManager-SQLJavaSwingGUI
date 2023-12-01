@@ -65,6 +65,12 @@ public class RawDataTablePackage {
 
         // Dropdown for tables
         JComboBox<String> tableDropdown = new JComboBox<>(tableNamesArray);
+        if (tableNamesArray.length>0){
+            // cache field names of default table to prevent not-selected error case
+            List<String> firstFieldNames = db.getColumnNames(tableNamesArray[0]);
+            tableFieldsCache.put(tableNamesArray[0], firstFieldNames);
+        }
+
         tableDropdown.addActionListener(e -> {
             String selectedTable = (String) tableDropdown.getSelectedItem();
             if (!tableFieldsCache.containsKey(selectedTable)) {
@@ -124,6 +130,7 @@ public class RawDataTablePackage {
                 System.out.println(requestData.toString());
                 JSONArray tableData = db.getRawData(requestData);
                 System.out.println(tableData.toString());
+                updateTableWithData(tableData);
                 fieldSelectionDialog.dispose();
             }
         });
@@ -142,6 +149,44 @@ public class RawDataTablePackage {
         fieldSelectionDialog.setVisible(true);
     }
 
+    private void clearTable(){
+        // Clear existing data from the table model
+        tableModel.setRowCount(0);
+        tableModel.setColumnCount(0);
+    }
+
+    public void updateTableWithData(JSONArray dbData) {
+        clearTable();
+        if(dbData.isEmpty()){
+            noDataPopup();
+            return;
+        }
+        // get colNames from dbData
+        List<String> colNames = new ArrayList<>();
+        JSONObject firstRow = dbData.getJSONObject(0);
+        Iterator<String> keys = firstRow.keys();
+
+        // Add the column names to the table model
+        while (keys.hasNext()) {
+            String name = keys.next();
+            colNames.add(name);
+            tableModel.addColumn(name);
+        }
+
+
+        // Iterate through each entry in the dbData array
+        for (int i = 0; i < dbData.length(); i++) {
+            JSONObject rowObject = dbData.getJSONObject(i);
+            Vector<Object> row = new Vector<>();
+            for (String fieldName : colNames) {
+                row.add(rowObject.opt(fieldName));
+            }
+            // Add the row to the table model
+            tableModel.addRow(row);
+        }
+
+    }
+
 
     public JTable getTable() {
         return table;
@@ -156,6 +201,13 @@ public class RawDataTablePackage {
     public String getName() {
         return name;
     }
+
+    public void noDataPopup() {
+        JOptionPane.showMessageDialog(packagePanel,
+                "No Data Found\n",
+                "No Data", JOptionPane.WARNING_MESSAGE);
+    }
+
 
 
 
