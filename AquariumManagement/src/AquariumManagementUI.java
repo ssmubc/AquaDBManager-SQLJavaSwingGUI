@@ -43,20 +43,74 @@ public class AquariumManagementUI extends JFrame {
         TablePackage tankTablePkg = new TablePackage(this::showHome,"Tank", db::listWaterTank);
         TablePackage staffTablePkg = new TablePackage(this::showHome,"Staffs", db::listStaff);
         TablePackage animalTablePkg = new TablePackage(this::showHome,"Animals", db::listAnimal);
+        TablePackage aquaristTablePkg = new TablePackage(this::showHome,"Plants", db::listPlants);
 
         
         tankTablePkg.setAdvancedSearch(getTankFields(), db::selectWaterTank);
         equipTablePkg.getButtonPanel().add(equipBySizeBtn(equipTablePkg));
         animalTablePkg.getButtonPanel().add(findAnimalExpertBtn(animalTablePkg));
         animalTablePkg.getButtonPanel().add(ageAboveTempBtn(animalTablePkg));
+        aquaristTablePkg.getButtonPanel().add(findDivingExpertInEachTankBtn(aquaristTablePkg));
 
 
         tablePackages.add(staffTablePkg);
         tablePackages.add(animalTablePkg);
         tablePackages.add(equipTablePkg);
         tablePackages.add(tankTablePkg);
+        tablePackages.add(aquaristTablePkg);
 
 
+    }
+
+    private JButton findDivingExpertInEachTankBtn(TablePackage tp) {
+        JButton btn = new JButton("Find Biodiversity in Tanks");
+
+        btn.addActionListener(e -> {
+            JDialog dialog = new JDialog();
+            dialog.setTitle("Find Biodiversity in Tanks");
+            dialog.setLayout(new BorderLayout());
+            dialog.setSize(400, 150);
+
+            JPanel inputPanel = new JPanel();
+            JTextField inputField = new JTextField(20);
+            inputPanel.add(new JLabel("Minimum Species Number"));
+            inputPanel.add(inputField);
+
+            JPanel buttonPanel = new JPanel();
+            JButton findButton = new JButton("Find");
+            JButton cancelButton = new JButton("Cancel");
+
+            findButton.addActionListener(ev -> {
+                String minLevelString = inputField.getText();
+                int minLevel;
+                try{
+                    minLevel = Integer.parseInt(minLevelString);
+                } catch (NumberFormatException err){
+                    tp.invalidDataPopup();
+                    return;
+                }
+                JSONArray dbData = db.getPlantDiversityInTanksAboveThreshold(minLevel);
+                if (dbData == null || dbData.isEmpty()) {
+                    JOptionPane.showMessageDialog(dialog, "No Tanks Found", "Result", JOptionPane.INFORMATION_MESSAGE);
+                } else {
+                    tp.updateTableWithAnyData(dbData);
+                }
+
+                dialog.dispose();
+            });
+
+            // Add action listener to cancelButton
+            cancelButton.addActionListener(ev -> dialog.dispose());
+
+            buttonPanel.add(findButton);
+            buttonPanel.add(cancelButton);
+
+            dialog.add(inputPanel, BorderLayout.CENTER);
+            dialog.add(buttonPanel, BorderLayout.SOUTH);
+            dialog.setVisible(true);
+        });
+
+        return btn;
     }
 
     private JButton ageAboveTempBtn(TablePackage tp) {
@@ -197,39 +251,6 @@ public class AquariumManagementUI extends JFrame {
 
 
 
-    private void createAndShowAggregationPanel() {
-        JFrame aggregationFrame = new JFrame("High Earning Staff Aggregation");
-        aggregationFrame.setSize(400, 200);
-        JPanel aggregationPanel = new JPanel();
-        aggregationPanel.setLayout(new GridLayout(0, 1));
-
-        JLabel thresholdLabel = new JLabel("Enter Salary Threshold:");
-        JTextField thresholdTextField = new JTextField(10);
-
-        JButton runQueryButton = new JButton("Run Query");
-        JTextArea resultArea = new JTextArea(5, 20);
-        resultArea.setEditable(false);
-
-        runQueryButton.addActionListener(e -> {
-            try {
-                int shelf_number = Integer.parseInt(thresholdTextField.getText());
-                JSONArray result = db.getCountShelvesByFullnessStatus(shelf_number);
-                resultArea.setText(result.toString(4));
-            } catch (NumberFormatException ex) {
-                JOptionPane.showMessageDialog(aggregationFrame, "Please enter a valid integer for the shelf number threshold.");
-            }
-        });
-
-        aggregationPanel.add(thresholdLabel);
-        aggregationPanel.add(thresholdTextField);
-        aggregationPanel.add(runQueryButton);
-        aggregationPanel.add(new JScrollPane(resultArea));
-
-        aggregationFrame.add(aggregationPanel);
-        aggregationFrame.pack();
-        aggregationFrame.setLocationRelativeTo(null);
-        aggregationFrame.setVisible(true);
-    }
 
     private void initializeManagers() {
         // TODO: Add DB NAME and Change inputFieldMap use DB Field name as key
@@ -379,6 +400,8 @@ public class AquariumManagementUI extends JFrame {
                     );
                     if(success){
                         panelPkg.insertSuccessPopup(id);
+                    } else {
+                        panelPkg.invalidDataPopup();
                     }
                 } catch (NumberFormatException err) {
                     panelPkg.invalidDataPopup();

@@ -2566,28 +2566,29 @@ public class AquariumManagementDB {
     // #:~:text=In%20SQL%2C%20you%20use%20the,when%20used%20with%20aggregate%20functions.
 
     // FUNCTION FOR "Queries: Aggregation with Having"
-    public JSONArray getCountShelvesByFullnessStatus(int shelfNumberThreshold) {
-        String sql = "SELECT IS_FULL, COUNT(*) AS ShelfCount " +
-                "FROM SHELFININVENTORY " +
-                "GROUP BY IS_FULL " +
-                "HAVING COUNT(SHELF_NUMBER) > ?";
+    public JSONArray getPlantDiversityInTanksAboveThreshold(int speciesThreshold) {
+        String sql = "SELECT WATER_TANK_ID,  " +
+                "COUNT(DISTINCT SPECIES) AS Species_Count " +
+                "FROM GROWN_IN_PLANT " +
+                "GROUP BY WATER_TANK_ID " +
+                "HAVING COUNT(DISTINCT SPECIES) > ?";
 
-        JSONArray shelfCountsArray = new JSONArray();
+        JSONArray tanksArray = new JSONArray();
 
         try {
             PreparedStatement preparedStatement = connection.prepareStatement(sql);
-            preparedStatement.setInt(1, shelfNumberThreshold);
+            preparedStatement.setInt(1, speciesThreshold);
             ResultSet resultSet = preparedStatement.executeQuery();
 
             while (resultSet.next()) {
-                String isFull = resultSet.getString("IS_FULL");
-                int count = resultSet.getInt("ShelfCount");
+                String waterTankId = resultSet.getString("WATER_TANK_ID");
+                int speciesCount = resultSet.getInt("Species_Count");
 
-                JSONObject shelfCountInfo = new JSONObject();
-                shelfCountInfo.put("IS_FULL", isFull);
-                shelfCountInfo.put("ShelfCount", count);
+                JSONObject tankInfo = new JSONObject();
+                tankInfo.put("WaterTank(ID)", waterTankId);
+                tankInfo.put("Species Count", speciesCount);
 
-                shelfCountsArray.put(shelfCountInfo);
+                tanksArray.put(tankInfo);
             }
 
             resultSet.close();
@@ -2596,7 +2597,7 @@ public class AquariumManagementDB {
             System.out.println("Query failed: " + e.getMessage());
         }
 
-        return shelfCountsArray.isEmpty() ? null : shelfCountsArray;
+        return tanksArray.isEmpty() ? null : tanksArray;
     }
 
 
