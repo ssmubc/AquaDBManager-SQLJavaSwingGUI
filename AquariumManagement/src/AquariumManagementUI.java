@@ -212,11 +212,11 @@ public class AquariumManagementUI extends JFrame {
 
         runQueryButton.addActionListener(e -> {
             try {
-                BigDecimal threshold = new BigDecimal(thresholdTextField.getText());
-                JSONArray result = db.getSalariesWithHighEarningStaffCounts(threshold);
+                int shelf_number = Integer.parseInt(thresholdTextField.getText());
+                JSONArray result = db.getCountShelvesByFullnessStatus(shelf_number);
                 resultArea.setText(result.toString(4));
             } catch (NumberFormatException ex) {
-                JOptionPane.showMessageDialog(aggregationFrame, "Please enter a valid decimal number for the salary threshold.");
+                JOptionPane.showMessageDialog(aggregationFrame, "Please enter a valid integer for the shelf number threshold.");
             }
         });
 

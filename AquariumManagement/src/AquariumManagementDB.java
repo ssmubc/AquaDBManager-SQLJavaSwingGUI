@@ -552,6 +552,51 @@ public class AquariumManagementDB {
             return itemsJSONArray;
     }
 
+    public JSONArray listItemsAboveThreshold(int quantityThreshold) {
+        String sql = "SELECT iq.ID, iq.NAME, iq.QUANTITY, iu.UNIT " +
+                "FROM ITEMQUANTITY iq " +
+                "JOIN ITEMUNIT iu ON iq.NAME = iu.NAME " +
+                "WHERE QUANTITY > ?";
+
+        JSONArray itemsJSONArray = new JSONArray();
+
+        try {
+            PreparedStatement preparedStatement = connection.prepareStatement(sql);
+            preparedStatement.setInt(1, quantityThreshold);
+            ResultSet resultSet = preparedStatement.executeQuery();
+
+            while (resultSet.next()) {
+                int id = resultSet.getInt("ID");
+                String name = resultSet.getString("NAME");
+                int quantity = resultSet.getInt("QUANTITY");
+                String unit = resultSet.getString("UNIT");
+
+                JSONObject item = new JSONObject();
+                item.put("ID", id);
+                item.put("NAME", name);
+                item.put("QUANTITY", quantity);
+                item.put("UNIT", unit);
+
+                itemsJSONArray.put(item);
+
+                System.out.println("ID: " + id + ", NAME: " + name + ", QUANTITY: " + quantity + ", UNIT: " + unit
+                );
+
+            }
+
+            resultSet.close();
+
+            System.out.println("Data FROM ITEM was listed successfully");
+
+        } catch (SQLException e) {
+            System.out.println("Data FROM ITEM was not listed properly");
+        }
+        if (itemsJSONArray.isEmpty()) {
+            return null;
+        }
+        return itemsJSONArray;
+    }
+
     public boolean insertFood(int id, String exp_date, String food_type) {
         String sql = "INSERT INTO FOOD (ITEM_ID, EXP_DATE, FOOD_TYPE) VALUES (?, ?, ?)";
 
@@ -1318,7 +1363,7 @@ public class AquariumManagementDB {
         return waterTankArray;
     }
 
-    // Source:
+    // Source: https://stackoverflow.com/questions/24191040/checking-to-see-if-a-string-is-letters-spaces-only
     public boolean containsOnlyAlphabets(String str) {
         // Use a regular expression to check if the string contains only alphabets
         return str.matches("[a-zA-Z\\s]+");

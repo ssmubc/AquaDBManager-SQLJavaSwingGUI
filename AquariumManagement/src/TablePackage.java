@@ -335,7 +335,7 @@ public class TablePackage {
                 criteria.put("Name", name);
                 criteria.put("Condition", components.conditionComboBox.getSelectedItem().toString());
                 criteria.put("Comparison", components.comparisonField.getSelectedItem().toString());
-                criteria.put("Value", "'"+components.valueField.getText()+"'");
+                criteria.put("Value", components.valueField.getText());
 
                 searchCriteriaArray.put(criteria);
             }
