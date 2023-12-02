@@ -43,21 +43,21 @@ public class AquariumManagementUI extends JFrame {
         TablePackage tankTablePkg = new TablePackage(this::showHome,"Tank", db::listWaterTank);
         TablePackage staffTablePkg = new TablePackage(this::showHome,"Staffs", db::listStaff);
         TablePackage animalTablePkg = new TablePackage(this::showHome,"Animals", db::listAnimal);
-        TablePackage aquaristTablePkg = new TablePackage(this::showHome,"Plants", db::listPlants);
+        TablePackage plants = new TablePackage(this::showHome,"Plants", db::listPlants);
 
         
         tankTablePkg.setAdvancedSearch(getTankFields(), db::selectWaterTank);
         equipTablePkg.getButtonPanel().add(equipBySizeBtn(equipTablePkg));
         animalTablePkg.getButtonPanel().add(findAnimalExpertBtn(animalTablePkg));
         animalTablePkg.getButtonPanel().add(ageAboveTempBtn(animalTablePkg));
-        aquaristTablePkg.getButtonPanel().add(findDivingExpertInEachTankBtn(aquaristTablePkg));
+        plants.getButtonPanel().add(findDivingExpertInEachTankBtn(plants));
 
 
         tablePackages.add(staffTablePkg);
         tablePackages.add(animalTablePkg);
         tablePackages.add(equipTablePkg);
         tablePackages.add(tankTablePkg);
-        tablePackages.add(aquaristTablePkg);
+        tablePackages.add(plants);
 
 
     }
@@ -347,6 +347,8 @@ public class AquariumManagementUI extends JFrame {
                     );
                     if(success){
                         panelPkg.insertSuccessPopup(id);
+                    } else {
+                        panelPkg.invalidDataPopup();
                     }
                 } catch (NumberFormatException err) {
                     panelPkg.invalidDataPopup();
@@ -368,6 +370,8 @@ public class AquariumManagementUI extends JFrame {
                     );
                     if(success){
                         panelPkg.updateSuccessPopup(id);
+                    } else {
+                        panelPkg.invalidDataPopup();
                     }
                 } catch (NumberFormatException err) {
                     panelPkg.invalidDataPopup();
@@ -412,15 +416,17 @@ public class AquariumManagementUI extends JFrame {
         panelPkg.getUpdateButton().addActionListener(e -> {
             if(panelPkg.checkMandatoryFields()){
                 try{
-                    int id = Integer.parseInt(panelPkg.getFieldText("Plant_ID"));
+                    int id = Integer.parseInt(panelPkg.getFieldText("PLANT_ID"));
                     boolean success = db.updatePlant(id,
-                            panelPkg.getFieldText("Species"),
-                            Float.parseFloat(panelPkg.getFieldText("Living_Temp")),
-                            Float.parseFloat(panelPkg.getFieldText("Living_Light")),
-                            Integer.parseInt(panelPkg.getFieldText("Water_Tank_ID"))
+                            panelPkg.getFieldText("SPECIES"),
+                            Float.parseFloat(panelPkg.getFieldText("LIVING_TEMP")),
+                            Float.parseFloat(panelPkg.getFieldText("LIVING_LIGHT")),
+                            Integer.parseInt(panelPkg.getFieldText("WATER_TANK_ID"))
                     );
                     if(success){
                         panelPkg.updateSuccessPopup(id);
+                    } else {
+                        panelPkg.invalidDataPopup();
                     }
                 } catch (NumberFormatException err) {
                     panelPkg.invalidDataPopup();
@@ -455,6 +461,8 @@ public class AquariumManagementUI extends JFrame {
                     boolean success = db.insertAquarist(id, divingLevel, waterTankId);
                     if(success){
                         panelPkg.insertSuccessPopup(id);
+                    } else {
+                        panelPkg.invalidDataPopup();
                     }
                 } catch (NumberFormatException err) {
                     panelPkg.invalidDataPopup();
@@ -472,6 +480,8 @@ public class AquariumManagementUI extends JFrame {
                     boolean success = db.updateAquarist(id, divingLevel, waterTankId);
                     if(success){
                         panelPkg.updateSuccessPopup(id);
+                    } else {
+                        panelPkg.invalidDataPopup();
                     }
                 } catch (NumberFormatException err) {
                     panelPkg.invalidDataPopup();
@@ -506,6 +516,8 @@ public class AquariumManagementUI extends JFrame {
                     boolean success = db.insertCustodian(id, exhibitId);
                     if(success){
                         panelPkg.insertSuccessPopup(id);
+                    } else {
+                        panelPkg.invalidDataPopup();
                     }
                 } catch (NumberFormatException err) {
                     panelPkg.invalidDataPopup();
@@ -522,6 +534,8 @@ public class AquariumManagementUI extends JFrame {
                     boolean success = db.updateCustodian(id, exhibitId);
                     if(success){
                         panelPkg.updateSuccessPopup(id);
+                    } else {
+                        panelPkg.invalidDataPopup();
                     }
                 } catch (NumberFormatException err) {
                     panelPkg.invalidDataPopup();
@@ -554,6 +568,8 @@ public class AquariumManagementUI extends JFrame {
                     boolean success = db.insertVeterinarian(id);
                     if(success){
                         panelPkg.insertSuccessPopup(id);
+                    } else {
+                        panelPkg.invalidDataPopup();
                     }
                 } catch (NumberFormatException err) {
                     panelPkg.invalidDataPopup();
@@ -592,6 +608,8 @@ public class AquariumManagementUI extends JFrame {
                     boolean success = db.insertStaff(id, salary, staffName, dateHired);
                     if(success){
                         panelPkg.insertSuccessPopup(id);
+                    } else {
+                        panelPkg.invalidDataPopup();
                     }
                 } catch (IllegalArgumentException err) {
                     panelPkg.invalidDataPopup();
@@ -610,6 +628,8 @@ public class AquariumManagementUI extends JFrame {
                     boolean success = db.updateStaff(id, salary, staffName, dateHired);
                     if(success){
                         panelPkg.updateSuccessPopup(id);
+                    } else {
+                        panelPkg.invalidDataPopup();
                     }
                 } catch (IllegalArgumentException err) {
                     panelPkg.invalidDataPopup();
@@ -653,6 +673,8 @@ public class AquariumManagementUI extends JFrame {
                     );
                     if(success){
                         panelPkg.insertSuccessPopup(id);
+                    } else {
+                        panelPkg.invalidDataPopup();
                     }
                 } catch (NumberFormatException err) {
                     panelPkg.invalidDataPopup();
@@ -675,6 +697,8 @@ public class AquariumManagementUI extends JFrame {
                     );
                     if(success){
                         panelPkg.updateSuccessPopup(id);
+                    } else {
+                        panelPkg.invalidDataPopup();
                     }
                 } catch (NumberFormatException err) {
                     panelPkg.invalidDataPopup();
