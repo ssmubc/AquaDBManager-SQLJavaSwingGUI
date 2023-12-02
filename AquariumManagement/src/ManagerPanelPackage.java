@@ -23,14 +23,23 @@ public class ManagerPanelPackage {
     // Key: DB_FIELD_NAME
     // Value: ManagerInputField
     private HashMap<String, ManagerInputField> inputFieldMap;
+    private JPanel instructionPanel;
 
     // input fields: {{String displayName, String placeholder(optional)}}
     public ManagerPanelPackage(String title, String[][] inputFields){
+
         this.inputFieldMap = new HashMap<>();
         this.title = title;
         this.mainButton = new JButton("Manage "+ title);
         mainButton.setPreferredSize(buttonSize);
         panel = new JPanel(new BorderLayout());
+        panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
+
+        instructionPanel = new JPanel(new FlowLayout(FlowLayout.CENTER));
+        JLabel instructionLabel1 = new JLabel("* Use tip: Search / Delete "+this.title+ " by ID. Search before update.");
+
+        instructionPanel.add(instructionLabel1);
+        panel.add(instructionPanel);
 
         JPanel inputPanel = new JPanel(new GridLayout(0, 2));
 
@@ -49,8 +58,9 @@ public class ManagerPanelPackage {
 
             inputFieldMap.put(inputFields[i][0], managerField);
         }
+        panel.add(inputPanel);
 
-        panel.add(inputPanel, BorderLayout.CENTER);
+
 
         // Initialize buttons
         searchButton = new JButton("Search");
@@ -165,19 +175,29 @@ public class ManagerPanelPackage {
         if(inputFieldMap.containsKey(dbFieldName)){
             inputFieldMap.get(dbFieldName).getTextField().setText(text);
         }
-        // TODO: Handle Error
     }
 
-    public void addSearchAction(String idFieldName, Function<Integer, JSONObject> searchFunction){
+    private boolean isNumeric(String str) {
+        try {
+            Integer.parseInt(str);
+            return true;
+        } catch (NumberFormatException e) {
+            return false;
+        }
+    }
+
+    public void addSearchAction(String idFieldName, Function<Integer, JSONObject> searchFunction) {
         searchButton.addActionListener(e -> {
-            if(fieldTextExists(idFieldName)){
-                int id =  Integer.parseInt(getFieldText(idFieldName));
+            if (fieldTextExists(idFieldName) && isNumeric(getFieldText(idFieldName))) {
+                int id = Integer.parseInt(getFieldText(idFieldName));
                 JSONObject dataFound = searchFunction.apply(id);
-                if(dataFound != null){
+                if (dataFound != null) {
                     showDbData(dataFound);
                 } else {
                     idNotExistPopup(id);
                 }
+            } else {
+                invalidDataPopup();
             }
         });
     }
