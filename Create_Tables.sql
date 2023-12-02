@@ -798,6 +798,36 @@ INSERT INTO Grown_In_Plant VALUES (104, 'Coral', 26.0, 90.0, 4);
 COMMIT;
 INSERT INTO Grown_In_Plant VALUES (105, 'Anubias', 24.0, 60.0, 5);
 COMMIT;
+INSERT INTO Grown_In_Plant VALUES (106, 'Duckweed', 24.5, 70.0, 3);
+COMMIT;
+INSERT INTO Grown_In_Plant VALUES (107, 'Water lettuce', 25.0, 66.0, 1);
+COMMIT;
+INSERT INTO Grown_In_Plant VALUES (108, 'Watercress', 25.5, 65.0, 2);
+COMMIT;
+INSERT INTO Grown_In_Plant VALUES (109, 'Coontail', 25.3, 67.0, 2);
+COMMIT;
+INSERT INTO Grown_In_Plant VALUES (110, 'American Lotus', 27.0, 80.0, 4);
+COMMIT;
+INSERT INTO Grown_In_Plant VALUES (111, 'Chara', 26.0, 90.0, 4);
+COMMIT;
+INSERT INTO Grown_In_Plant VALUES (112, 'WaterThymes', 22.0, 85.0, 5);
+COMMIT;
+INSERT INTO Grown_In_Plant VALUES (113, 'Canna', 22.5, 60.0, 1);
+COMMIT;
+INSERT INTO Grown_In_Plant VALUES (114, 'Northern Blue Flag', 26.5, 65.0, 2);
+COMMIT;
+INSERT INTO Grown_In_Plant VALUES (115, 'Coontail', 27.3, 67.0, 2);
+COMMIT;
+INSERT INTO Grown_In_Plant VALUES (116, 'Mosquito ferns', 24.5, 85.0, 3);
+COMMIT;
+INSERT INTO Grown_In_Plant VALUES (117, 'Parrots leather', 26.0, 73.0, 3);
+COMMIT;
+INSERT INTO Grown_In_Plant VALUES (118, 'Bladderwot', 22.0, 82.0, 5);
+COMMIT;
+INSERT INTO Grown_In_Plant VALUES (119, 'Potamogeton', 21.0, 64.0, 1);
+COMMIT;
+INSERT INTO Grown_In_Plant VALUES (120, 'Water lily', 25.5, 87.0, 2);
+COMMIT;
 
 
 CREATE TABLE Aquarist_Maintain_WaterTank (
