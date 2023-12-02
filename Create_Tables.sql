@@ -1,4 +1,5 @@
 -- DROP the tables We will drop tables with foreign key dependencies first
+-- Citation: https://stackoverflow.com/questions/58726718/set-variable-value
 
 BEGIN
     EXECUTE IMMEDIATE 'DROP TABLE Supply';
@@ -232,9 +233,7 @@ END;
 /
 
 
--- Repeat the above block for each table you want to drop
-
--- After all DROP TABLE statements, include your CREATE TABLE and INSERT statements.
+-- After all DROP TABLE statements, this is our CREATE TABLE and INSERT statements.
 
 
 COMMIT;
@@ -371,7 +370,7 @@ CREATE TABLE WaterTankLogistics (
 );
 COMMIT;
 
--- ERRORS IN WATERTANKLOGISTICS INSERT statements (FIXED)
+
 INSERT INTO WaterTankLogistics VALUES (1, 'Shark Tank', 1000.45, 27.5, 'MEDIUM', 18);
 COMMIT;
 INSERT INTO WaterTankLogistics VALUES (2, 'Octopus Tank', 1500.45, 27.8, 'MEDIUM', 17);
@@ -691,7 +690,6 @@ CREATE TABLE Installed (
 COMMIT;
 INSERT INTO Installed(equipment_id, water_tank_id, quantity, date_installed) VALUES (1, 1, 50, '2023-11-20');
 COMMIT;
--- ADD MORE HERE
 
 
 
