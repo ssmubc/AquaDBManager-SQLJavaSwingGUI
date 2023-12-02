@@ -88,7 +88,7 @@ public class AquariumManagementUI extends JFrame {
                 }
 
 
-                JSONArray dbData = db.groupByAnimalSpeciesAndAverageAgeAboveLivingTemp(temp);
+                JSONArray dbData = db.groupByAnimalSpeciesAndAverageAgeAboveLivingTemp((float)temp);
                 if (dbData == null || dbData.isEmpty()) {
                     JOptionPane.showMessageDialog(dialog, "No animal found", "Result", JOptionPane.INFORMATION_MESSAGE);
                     tp.clearTable();

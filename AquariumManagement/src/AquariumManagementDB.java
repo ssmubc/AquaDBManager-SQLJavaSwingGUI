@@ -1583,7 +1583,7 @@ public class AquariumManagementDB {
     // Citation: Studied: https://www.w3schools.com/sql/sql_groupby.asp
 
     // FUNCTION FOR "Queries: Nested Aggregation with GROUP BY"
-    public JSONArray groupByAnimalSpeciesAndAverageAgeAboveLivingTemp(double temperatureThreshold) {
+    public JSONArray groupByAnimalSpeciesAndAverageAgeAboveLivingTemp(float temperatureThreshold) {
         String sql = "SELECT a.SPECIES, AVG(a.AGE) " +
                 "FROM ANIMAL a " +
                 "GROUP BY a.SPECIES " +
@@ -1596,7 +1596,7 @@ public class AquariumManagementDB {
 
         try {
             PreparedStatement preparedStatement = connection.prepareStatement(sql);
-            preparedStatement.setDouble(1, temperatureThreshold);
+            preparedStatement.setFloat(1, temperatureThreshold);
             ResultSet resultSet = preparedStatement.executeQuery();
 
             while (resultSet.next()) {
