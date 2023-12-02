@@ -296,7 +296,25 @@ INSERT INTO Staff VALUES (112, 100000.80, 'Megumi', '2021-07-16');
 COMMIT;
 INSERT INTO Staff VALUES (113, 100000.80, 'Oshimhen', '2021-04-16');
 COMMIT;
-INSERT INTO Staff VALUES (114, 1000.50, 'Messi', '2021-04-16');
+INSERT INTO Staff VALUES (114, 5000.50, 'Messi', '2021-04-16');
+COMMIT;
+INSERT INTO Staff VALUES (115, 55000.50, 'Max', '2020-04-16');
+COMMIT;
+INSERT INTO Staff VALUES (116, 55000.50, 'James', '2022-04-16');
+COMMIT;
+INSERT INTO Staff VALUES (117, 55000.50, 'Matthew', '2021-05-16');
+COMMIT;
+INSERT INTO Staff VALUES (118, 5500.50, 'Jonas', '2021-06-16');
+COMMIT;
+INSERT INTO Staff VALUES (119, 60000.50, 'Alexia', '2021-06-16');
+COMMIT;
+INSERT INTO Staff VALUES (120, 60000.50, 'Samantha', '2021-07-16');
+COMMIT;
+INSERT INTO Staff VALUES (121, 60000.50, 'Yuta', '2021-07-16');
+COMMIT;
+INSERT INTO Staff VALUES (122, 55000.50, 'Kenny', '2021-08-16');
+COMMIT;
+INSERT INTO Staff VALUES (123, 60000.50, 'Jennie', '2021-08-16');
 COMMIT;
 
 
@@ -385,6 +403,22 @@ INSERT INTO Aquarist VALUES (112, 100.00, 4);
 COMMIT;
 INSERT INTO Aquarist VALUES (113, 100.00, 5);
 COMMIT;
+INSERT INTO Aquarist VALUES (114, 100.00, 5);
+COMMIT;
+INSERT INTO Aquarist VALUES (115, 98.00, 1);
+COMMIT;
+INSERT INTO Aquarist VALUES (116, 97.00, 1);
+COMMIT;
+INSERT INTO Aquarist VALUES (117, 95.00, 2);
+COMMIT;
+INSERT INTO Aquarist VALUES (118, 94.00, 3);
+COMMIT;
+INSERT INTO Aquarist VALUES (119, 102.00, 1);
+COMMIT;
+INSERT INTO Aquarist VALUES (120, 101.00, 4);
+COMMIT;
+INSERT INTO Aquarist VALUES (121, 100.00, 4);
+COMMIT;
 
 
 
@@ -442,6 +476,24 @@ COMMIT;
 INSERT INTO Animal(id, animal_name, Species, Age, LivingTemp, water_tank_id, veterinarian_id)
 VALUES (38, 'Benjamin', 'Beluga Whale', 3, 27.7, 5, 105);
 COMMIT;
+INSERT INTO Animal(id, animal_name, Species, Age, LivingTemp, water_tank_id, veterinarian_id)
+VALUES (39, 'John', 'Beluga Whale', 4, 27.7, 5, 106);
+COMMIT;
+INSERT INTO Animal(id, animal_name, Species, Age, LivingTemp, water_tank_id, veterinarian_id)
+VALUES (40, 'Alexander', 'Beluga Whale', 8, 27.6, 5, 106);
+COMMIT;
+INSERT INTO Animal(id, animal_name, Species, Age, LivingTemp, water_tank_id, veterinarian_id)
+VALUES (41, 'Benjamin', 'Fin Whale', 3, 27.7, 5, 106);
+COMMIT;
+INSERT INTO Animal(id, animal_name, Species, Age, LivingTemp, water_tank_id, veterinarian_id)
+VALUES (42, 'Benjamin', 'Fin Whale', 3, 27.7, 5, 106);
+COMMIT;
+INSERT INTO Animal(id, animal_name, Species, Age, LivingTemp, water_tank_id, veterinarian_id)
+VALUES (43, 'Sam', 'Humphead wrasse', 1, 27.5, 5, 106);
+COMMIT;
+INSERT INTO Animal(id, animal_name, Species, Age, LivingTemp, water_tank_id, veterinarian_id)
+VALUES (44, 'Michael', 'Humphead wrasse', 1, 27.5, 5, 106);
+COMMIT;
 
 
 CREATE TABLE Inventory (
@@ -479,6 +531,10 @@ COMMIT;
 INSERT INTO ShelfInInventory (shelf_number, inventory_id, is_full) VALUES (4, 2, 'false');
 COMMIT;
 INSERT INTO ShelfInInventory (shelf_number, inventory_id, is_full) VALUES (5, 3, 'true');
+COMMIT;
+INSERT INTO ShelfInInventory (shelf_number, inventory_id, is_full) VALUES (6, 3, 'true');
+COMMIT;
+INSERT INTO ShelfInInventory (shelf_number, inventory_id, is_full) VALUES (7, 4, 'true');
 COMMIT;
 
 CREATE TABLE ItemQuantity (
@@ -742,6 +798,36 @@ INSERT INTO Grown_In_Plant VALUES (104, 'Coral', 26.0, 90.0, 4);
 COMMIT;
 INSERT INTO Grown_In_Plant VALUES (105, 'Anubias', 24.0, 60.0, 5);
 COMMIT;
+INSERT INTO Grown_In_Plant VALUES (106, 'Duckweed', 24.5, 70.0, 3);
+COMMIT;
+INSERT INTO Grown_In_Plant VALUES (107, 'Water lettuce', 25.0, 66.0, 1);
+COMMIT;
+INSERT INTO Grown_In_Plant VALUES (108, 'Watercress', 25.5, 65.0, 2);
+COMMIT;
+INSERT INTO Grown_In_Plant VALUES (109, 'Coontail', 25.3, 67.0, 2);
+COMMIT;
+INSERT INTO Grown_In_Plant VALUES (110, 'American Lotus', 27.0, 80.0, 4);
+COMMIT;
+INSERT INTO Grown_In_Plant VALUES (111, 'Chara', 26.0, 90.0, 4);
+COMMIT;
+INSERT INTO Grown_In_Plant VALUES (112, 'WaterThymes', 22.0, 85.0, 5);
+COMMIT;
+INSERT INTO Grown_In_Plant VALUES (113, 'Canna', 22.5, 60.0, 1);
+COMMIT;
+INSERT INTO Grown_In_Plant VALUES (114, 'Northern Blue Flag', 26.5, 65.0, 2);
+COMMIT;
+INSERT INTO Grown_In_Plant VALUES (115, 'Coontail', 27.3, 67.0, 2);
+COMMIT;
+INSERT INTO Grown_In_Plant VALUES (116, 'Mosquito ferns', 24.5, 85.0, 3);
+COMMIT;
+INSERT INTO Grown_In_Plant VALUES (117, 'Parrots leather', 26.0, 73.0, 3);
+COMMIT;
+INSERT INTO Grown_In_Plant VALUES (118, 'Bladderwot', 22.0, 82.0, 5);
+COMMIT;
+INSERT INTO Grown_In_Plant VALUES (119, 'Potamogeton', 21.0, 64.0, 1);
+COMMIT;
+INSERT INTO Grown_In_Plant VALUES (120, 'Water lily', 25.5, 87.0, 2);
+COMMIT;
 
 
 CREATE TABLE Aquarist_Maintain_WaterTank (
@@ -759,6 +845,22 @@ COMMIT;
 INSERT INTO AQUARIST_MAINTAIN_WATERTANK VALUES (112, 4);
 COMMIT;
 INSERT INTO AQUARIST_MAINTAIN_WATERTANK VALUES (113, 5);
+COMMIT;
+INSERT INTO AQUARIST_MAINTAIN_WATERTANK VALUES (114, 5);
+COMMIT;
+INSERT INTO AQUARIST_MAINTAIN_WATERTANK VALUES (115, 1);
+COMMIT;
+INSERT INTO AQUARIST_MAINTAIN_WATERTANK VALUES (116, 1);
+COMMIT;
+INSERT INTO AQUARIST_MAINTAIN_WATERTANK VALUES (117, 2);
+COMMIT;
+INSERT INTO AQUARIST_MAINTAIN_WATERTANK VALUES (118, 3);
+COMMIT;
+INSERT INTO AQUARIST_MAINTAIN_WATERTANK VALUES (119, 1);
+COMMIT;
+INSERT INTO AQUARIST_MAINTAIN_WATERTANK VALUES (120, 4);
+COMMIT;
+INSERT INTO AQUARIST_MAINTAIN_WATERTANK VALUES (121, 4);
 COMMIT;
 
 
