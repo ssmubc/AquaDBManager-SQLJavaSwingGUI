@@ -1,5 +1,10 @@
 # Aquarium Management Database Project -SQLJavaSwingGUI
 
+## Contributors:  
+Sharon Marfatia  
+Ayan Qadir  
+Chris Jung
+
 ## Summary of the project:
 Our database management project is designed to comprehensively model the many aspects of an aquarium
 exhibition, capturing both its internal and external components. Our database models core
@@ -19,8 +24,3 @@ professional settings.
 
 ## ER Diagram of the Relational Database:
 ![alt text](Proejct_ER_Diagram.png)
-
-## Contributors:  
-Sharon Marfatia  
-Ayan Qadir  
-Chris Jung
