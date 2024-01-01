@@ -70,7 +70,7 @@ public class AquariumManagementDB {
         String tableName = relationObj.getString("TableName");
 
         JSONArray fieldsArray = relationObj.getJSONArray("Fields");
-        
+
         if (fieldsArray != null && !fieldsArray.isEmpty()) {
             for (int i = 0; i < fieldsArray.length(); i++) {
                 String fieldName = fieldsArray.getString(i);
@@ -535,7 +535,7 @@ public class AquariumManagementDB {
                 itemsJSONArray.put(item);
 
                 System.out.println("ID: " + id + ", NAME: " + name + ", QUANTITY: " + quantity + ", UNIT: " + unit
-                        );
+                );
 
             }
 
@@ -546,10 +546,10 @@ public class AquariumManagementDB {
         } catch (SQLException e) {
             System.out.println("Data FROM ITEM was not listed properly");
         }
-            if (itemsJSONArray.isEmpty()) {
-                return null;
-            }
-            return itemsJSONArray;
+        if (itemsJSONArray.isEmpty()) {
+            return null;
+        }
+        return itemsJSONArray;
     }
 
     public JSONArray listItemsAboveThreshold(int quantityThreshold) {
