@@ -21,3 +21,5 @@ professional settings.
 Sharon Marfatia  
 Ayan Qadir  
 Chris Jung
+
+![alt text](Proejct_ER_Diagram.png)
