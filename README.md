@@ -18,6 +18,9 @@ of an Aquarium Management system that holds the potential for real-world applica
 professional settings.
 
 Contributors:
+
 Sharon Marfatia
+
 Ayan Qadir
+
 Chris Jung
