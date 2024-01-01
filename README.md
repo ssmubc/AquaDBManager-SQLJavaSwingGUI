@@ -17,9 +17,10 @@ buttons and selection options for various operations our final project is a robu
 of an Aquarium Management system that holds the potential for real-world applications in 
 professional settings.
 
+## ER Diagram of the Relational Database:
+![alt text](Proejct_ER_Diagram.png)
+
 ## Contributors:  
 Sharon Marfatia  
 Ayan Qadir  
 Chris Jung
-
-![alt text](Proejct_ER_Diagram.png)
